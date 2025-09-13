@@ -1,0 +1,411 @@
+{
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "impact": "Impact",
+    "loginAs": "Login as",
+    "citizen": "Citizen",
+    "contractor": "Contractor",
+    "admin": "Admin",
+    "report": "Report an Issue",
+    "beta": "Public Beta"
+  },
+  "hero": {
+    "title": "Report, Track, and Fix Civic Issues with Ease",
+    "subtitle": "Connecting citizens, contractors, and admins for a cleaner, safer city.",
+    "cta": "Get Started",
+    "alt": "GeoFix App Interface"
+  },
+  "features": {
+    "title": "Powerful Features for Everyone",
+    "subtitle": "GeoFix streamlines civic issue management across citizens, contractors, and city admins—from reporting to resolution.",
+    "simpleTitle": "Simple & Safe",
+    "simpleDesc": "No technical skills needed. Point, click, report. Your privacy is always protected.",
+    "fastTitle": "Fast Response", 
+    "fastDesc": "Get real-time updates from report to resolution. Track progress every step of the way.",
+    "cards": {
+      "easy": {
+        "title": "Easy Reporting",
+        "desc": "Capture photos/video, auto-detect your location, and submit issues in seconds."
+      },
+      "tracking": {
+        "title": "Real-time Tracking",
+        "desc": "Follow progress across stages with SLA timers, updates, and history."
+      },
+      "resolution": {
+        "title": "Faster Resolutions",
+        "desc": "Smart assignment and coordination between citizens, contractors, and admins."
+      }
+    },
+    "roles": {
+      "citizens": {
+        "title": "For Citizens",
+        "points": [
+          "Photo/video uploads with location",
+          "Category and severity selection",
+          "Status updates and notifications",
+          "Feedback on resolutions"
+        ]
+      },
+      "contractors": {
+        "title": "For Contractors",
+        "points": [
+          "Assigned work orders with SLAs",
+          "Route planning and map view",
+          "In-field status updates with media",
+          "Escalation support"
+        ]
+      },
+      "admins": {
+        "title": "For Admins",
+        "points": [
+          "Issue triage and smart assignment",
+          "City-wide map dashboard",
+          "Analytics & KPIs (SLA, backlog, heatmaps)",
+          "Policy, categories, and roles"
+        ]
+      }
+    },
+    "capabilities": [
+      { "title": "GIS Auto-locate", "desc": "Precise geotagging and map visualization" },
+      { "title": "Notifications", "desc": "Citizen, contractor, and admin alerts" },
+      { "title": "Map Dashboard", "desc": "City-wide hotspots and routes" },
+      { "title": "Mobile-first", "desc": "Works great on phones and tablets" },
+      { "title": "Multilingual", "desc": "Inclusive UI across languages" },
+      { "title": "Secure & Role-based", "desc": "Access controls and audit trails" }
+    ]
+  },
+  "impact": {
+    "title": "Making a Real Impact",
+    "reported": "Issues Reported",
+    "resolved": "Issues Resolved",
+    "progress": "In Progress"
+  },
+  "how": {
+    "title": "How It Works",
+    "subtitle": "Simple steps to make your city better",
+    "steps": [
+      { "title": "Report Issue", "desc": "Take a photo and describe the civic issue you've encountered" },
+      { "title": "Track Progress", "desc": "Monitor the status as authorities and contractors take action" },
+      { "title": "Issue Resolved", "desc": "Get notified when your issue is fixed and help improve your community" }
+    ]
+  },
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to report, track, or manage civic issues",
+    "roles": {
+      "citizen": {
+        "label": "Citizen",
+        "desc": "Report and track civic issues"
+      },
+      "contractor": {
+        "label": "Contractor",
+        "desc": "Manage assigned work orders"
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Oversee and coordinate resolutions"
+      }
+    },
+    "email": "Email Address",
+    "password": "Password",
+    "remember": "Remember me",
+    "forgot": "Forgot password?",
+    "signin": "Sign In as {role}",
+    "noAccount": "Don't have an account?",
+    "create": "Create Account",
+    "back": "← Back to Home",
+    "backToOptions": "← Back to Login Options",
+    "button": "Login"
+  },
+  "register": {
+    "title": "Join GeoFix",
+    "subtitle": "Create your account to start making a difference in your community",
+    "roles": {
+      "citizen": {
+        "label": "Citizen",
+        "desc": "Report and track civic issues in your area"
+      },
+      "contractor": {
+        "label": "Contractor",
+        "desc": "Receive and manage work assignments"
+      },
+      "admin": {
+        "label": "Admin",
+        "desc": "Oversee city-wide issue management"
+      }
+    },
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "address": "Address",
+    "city": "City",
+    "pincode": "PIN Code",
+    "terms": "I agree to the Terms of Service and Privacy Policy",
+    "signup": "Sign Up as {role}",
+    "haveAccount": "Already have an account?",
+    "signin": "Sign In",
+    "back": "← Back to Home",
+    "backToOptions": "← Back to Registration Options",
+    "button": "Register",
+    "selectRole": "Select your role to get started",
+    "personalInfo": "Personal Information",
+    "accountDetails": "Account Details",
+    "location": "Location Details",
+    "companyName": "Company Name",
+    "licenseNumber": "License Number",
+    "specialization": "Specialization",
+    "department": "Department",
+    "employeeId": "Employee ID"
+  },
+  "common": {
+    "freeToUse": "Free to use",
+    "startReportingNow": "Start Reporting Now",
+    "platformFeatures": "Platform Features",
+    "avgResponse": "Avg Response",
+    "issuesResolved": "Issues Resolved",
+    "communityDriven": "Community Driven",
+    "verifiedReview": "Verified Review",
+    "citiesTrusted": "50+ Cities",
+    "citiesTrustedDesc": "Trusted by communities nationwide",
+    "securePercent": "100% Secure",
+    "secureDesc": "Zero data breaches since launch",
+    "support24": "24/7 Support",
+    "supportDesc": "Always here when you need help",
+    "contactSupport": "Contact Support",
+    "stillQuestions": "Still have questions?",
+    "anyIssue": "Any community issue that needs attention? We're here to help.",
+    "clear": "Clear",
+    "close": "Close",
+    "prev": "Prev",
+    "next": "Next",
+    "status": {
+      "pending": "Pending",
+      "in-progress": "In Progress",
+      "resolved": "Resolved",
+      "rejected": "Rejected"
+    },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "category": {
+      "infrastructure": "Infrastructure",
+      "lighting": "Lighting",
+      "sanitation": "Sanitation",
+      "traffic": "Traffic",
+      "other": "Other"
+    },
+    "localParent": "Local Parent",
+    "citiesNationwide": "Used by 50+ cities nationwide",
+    "governmentApproved": "Government approved & verified",
+    "secureHandling": "100% secure data handling",
+    "communitySupportAvailable": "24/7 community support available",
+    "communityMember": "Community Member",
+    "activeCities": "Active in 50+ cities",
+    "buildingBetter": "Building better communities together",
+    "activeUsers": "Active Users"
+  },
+  "testimonials": {
+    "sarahQuote": "I reported a broken streetlight near my child's school. It was fixed within 3 days! Now kids can walk safely in the evening.",
+    "sarahName": "Sarah M.",
+    "anonymousQuote": "I was worried about privacy, but GeoFix let me report anonymously. The sidewalk issue was fixed within a week!",
+    "communityJoin": "Join thousands making their neighborhoods better, one report at a time.",
+    "potholeFix": "Pothole Fixed",
+    "potholeStory": "Reported a dangerous pothole on Main Street. Fixed in 2 days!",
+    "downtownResident": "Downtown Resident",
+    "lightRepair": "Light Repair", 
+    "lightStory": "Street light was out for weeks. One report and it's bright again!",
+    "nightShiftWorker": "Night Shift Worker",
+    "parkCleanup": "Park Cleanup",
+    "parkStory": "Graffiti removal happened faster than I expected. Thanks GeoFix!",
+    "familyUser": "Family User"
+  },
+  "stats": {
+    "realNumbers": "Real numbers from real communities using GeoFix to make a difference.",
+    "reportedCount": "12,847",
+    "resolvedCount": "9,234", 
+    "progressCount": "3,613",
+    "citizensHelping": "Citizens helping their communities",
+    "problemsFixed": "Problems fixed and neighborhoods improved",
+    "currentlyWorking": "Currently being worked on"
+  },
+  "safety": {
+    "title": "Privacy & Security First",
+    "subtitle": "Your safety matters. Here's how we protect you while you help your community.",
+    "anonymousTitle": "Anonymous Reporting",
+    "anonymousDesc": "Report issues without sharing personal information. Your privacy is always protected.",
+    "secureTitle": "Secure Platform",
+    "secureDesc": "All data is encrypted and never shared with third parties. Zero breaches since launch.",
+    "updatesTitle": "Smart Updates",
+    "updatesDesc": "Get progress updates only when you want them. Full control over notifications."
+  },
+  "faq": {
+    "title": "Quick Answers",
+    "subtitle": "Everything you need to know to get started",
+    "questions": [
+      {
+        "q": "Is it really free?",
+        "a": "Yes, completely free for citizens. Your local government covers the costs because they want to hear from you."
+      },
+      {
+        "q": "How fast are issues fixed?",
+        "a": "Most issues are addressed within 5-10 business days. Emergency issues like broken streetlights get priority."
+      },
+      {
+        "q": "Can I stay anonymous?",
+        "a": "Absolutely. You can report any issue without providing your name or contact information."
+      },
+      {
+        "q": "What kinds of issues can I report?",
+        "a": "Potholes, broken lights, graffiti, sidewalk issues, park maintenance, and more. If it affects your community, report it."
+      },
+      {
+        "q": "Do I need to create an account?",
+        "a": "No account needed for basic reporting. Create one only if you want to track your reports and get updates."
+      },
+      {
+        "q": "Is my location shared?",
+        "a": "Only the issue location is shared with city officials. Your personal location and identity remain private."
+      }
+    ]
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "about": "About",
+    "contact": "Contact",
+    "privacy": "Privacy Policy",
+    "getStarted": "Get Started",
+    "citizenLogin": "Citizen Login",
+    "contractorLogin": "Contractor Login", 
+    "adminLogin": "Admin Login",
+    "rights": "All rights reserved.",
+    "links": {
+      "features": "Features",
+      "howItWorks": "How It Works", 
+      "safety": "Safety & Privacy",
+      "helpCenter": "Help Center"
+    },
+    "portals": {
+      "reportCitizen": "Report as Citizen",
+      "contractorPortal": "Contractor Portal",
+      "adminDashboard": "Admin Dashboard"
+    },
+    "legal": {
+      "privacy": "Privacy Policy",
+      "terms": "Terms",
+      "accessibility": "Accessibility",
+      "contact": "Contact"
+    },
+    "description": "Making communities better, one report at a time. Join thousands of citizens creating positive change.",
+    "copyright": "© 2024 GeoFix. Building better communities together."
+  },
+  "dashboard": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "myIssues": "My Issues",
+      "settings": "Settings",
+      "profile": "Profile",
+      "logout": "Logout"
+    },
+    "citizen": {
+      "welcome": "Welcome",
+      "subtitle": "Community dashboard",
+      "communityRank": "Community Rank",
+      "reportIssue": "Report Issue",
+      "viewAll": "View All",
+      "recentIssues": "Recent Issues",
+      "searchIssues": "Search issues...",
+      "allStatus": "All status",
+      "allCategories": "All categories",
+      "allPriority": "All priority",
+      "sortLatest": "Sort: Latest",
+      "sortLikes": "Sort: Likes", 
+      "sortViews": "Sort: Views",
+      "noIssuesMatch": "No issues match your filters.",
+      "showing": "Showing",
+      "of": "of",
+      "page": "Page",
+      "recentActivity": "Recent Activity",
+      "markRead": "Mark read",
+      "viewAllNotifications": "View All Notifications",
+      "quickActions": "Quick Actions",
+      "reportNewIssue": "Report New Issue",
+      "viewAllMyIssues": "View All My Issues",
+      "editProfile": "Edit Profile",
+      "created": "Created",
+      "estResolution": "Est. resolution",
+      "assigned": "Assigned",
+      "like": "Like",
+      "unlike": "Unlike",
+      "markResolved": "Mark Resolved",
+      "attachments": "Attachments",
+      "noAttachments": "No attachments",
+      "community": "Community",
+      "views": "views",
+      "likes": "likes",
+      "comments": "comments",
+      "totalReports": "Total Reports",
+      "thisMonth": "this month",
+      "pending": "Pending",
+      "needsAttention": "Needs attention",
+      "inProgress": "In Progress",
+      "resolved": "Resolved",
+      "impact": "impact",
+      "infrastructure": "Infrastructure",
+      "lighting": "Lighting", 
+      "sanitation": "Sanitation",
+      "traffic": "Traffic",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "stats": {
+        "total": "Total Issues",
+        "totalDesc": "All issues you've reported",
+        "pending": "Pending",
+        "pendingDesc": "Awaiting review",
+        "inProgress": "In Progress",
+        "inProgressDesc": "Being worked on",
+        "resolved": "Resolved",
+        "resolvedDesc": "Successfully completed"
+      }
+    },
+    "contractor": {
+      "welcome": "Contractor Dashboard",
+      "subtitle": "Manage assigned issues and track progress",
+      "assignedIssues": "Assigned Issues",
+      "completedIssues": "Completed Issues",
+      "stats": {
+        "assigned": "Assigned",
+        "assignedDesc": "Issues assigned to you",
+        "inProgress": "In Progress",
+        "inProgressDesc": "Currently working on",
+        "completed": "Completed",
+        "completedDesc": "Successfully resolved",
+        "avgTime": "Avg. Resolution",
+        "avgTimeDesc": "Average completion time"
+      }
+    },
+    "admin": {
+      "welcome": "Admin Dashboard",
+      "subtitle": "Monitor city-wide issues and manage contractors",
+      "overview": "System Overview",
+      "manageUsers": "Manage Users",
+      "reports": "Reports",
+      "stats": {
+        "allIssues": "All Issues",
+        "allIssuesDesc": "Total reported issues",
+        "activeContractors": "Active Contractors",
+        "activeContractorsDesc": "Currently working",
+        "avgResolution": "Avg. Resolution Time",
+        "avgResolutionDesc": "System-wide average",
+        "satisfaction": "Satisfaction Rate",
+        "satisfactionDesc": "Citizen feedback score"
+      }
+    }
+  }
+}
