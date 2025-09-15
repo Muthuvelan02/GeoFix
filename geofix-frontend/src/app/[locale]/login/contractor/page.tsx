@@ -2,9 +2,8 @@
 
 import React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { Link } from "@/i18n/navigation"
+import { Link, useRouter } from "@/i18n/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import LanguageSwitcher from "@/components/LanguageSwitcher"
 import { ArrowLeft, HardHat, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
+import { authService } from "@/services/authService"
 
 export default function ContractorLoginPage() {
   const t = useTranslations()
@@ -30,6 +30,7 @@ export default function ContractorLoginPage() {
     e.preventDefault()
     
     if (!email || !password) {
+      setError("Please fill in all required fields")
       return
     }
 
@@ -37,15 +38,30 @@ export default function ContractorLoginPage() {
     setError(null)
 
     try {
-      // Simulate login process
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const loginData = {
+        email: email,
+        password: password
+      }
+
+      const response = await authService.login(loginData)
       
       setSuccess(true)
+      
+      // Check user role and redirect accordingly
+      const userRole = response.roles[0]
       setTimeout(() => {
-        router.push("/dashboard/contractor")
+        if (userRole === 'ROLE_CITIZEN') {
+          router.push("/dashboard/citizen")
+        } else if (userRole === 'ROLE_CONTRACTOR') {
+          router.push("/dashboard/contractor")
+        } else if (userRole === 'ROLE_ADMIN') {
+          router.push("/dashboard/admin")
+        } else {
+          router.push("/dashboard")
+        }
       }, 1500)
-    } catch (err) {
-      setError("Login failed. Please try again.")
+    } catch (err: any) {
+      setError(err.message || "Login failed. Please try again.")
       console.error("Login failed:", err)
     } finally {
       setLoading(false)
