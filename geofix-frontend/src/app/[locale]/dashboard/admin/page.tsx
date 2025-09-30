@@ -64,7 +64,7 @@ function AdminDashboard() {
                 <p><strong>Name:</strong> Admin User</p>
                 <p><strong>Email:</strong> admin@example.com</p>
                 <p><strong>Role:</strong> Administrator</p>
-                <p><strong>Status:</strong> 
+                <p><strong>Status:</strong>
                   <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                     Active
                   </span>
@@ -216,8 +216,8 @@ function AdminDashboard() {
                 GeoFix Admin Portal
               </h2>
               <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Welcome to the administrative dashboard for GeoFix. From here you can manage 
-                users, monitor system performance, configure settings, and oversee all aspects 
+                Welcome to the administrative dashboard for GeoFix. From here you can manage
+                users, monitor system performance, configure settings, and oversee all aspects
                 of the infrastructure reporting platform.
               </p>
             </div>

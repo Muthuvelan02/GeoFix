@@ -10,9 +10,16 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Don't add auth token for signup and login endpoints
+    const noAuthEndpoints = ['/auth/signup', '/auth/login'];
+    const isNoAuthEndpoint = noAuthEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
+    // Only access localStorage in browser environment
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('authToken');
+      if (token && !isNoAuthEndpoint) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     
     // Only set Content-Type to application/json if not FormData and not already set
@@ -36,12 +43,24 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid, redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('userData');
-      window.location.href = '/login';
+    // Only handle localStorage operations in browser environment
+    if (typeof window !== 'undefined') {
+      if (error.response?.status === 401) {
+        // Token expired or invalid, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        window.location.href = '/login';
+      }
+      
+      // Handle JWT expired errors specifically
+      if (error.response?.status === 500 && 
+          error.response?.data?.message?.includes('JWT expired')) {
+        // Clear expired token
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+      }
     }
+    
     return Promise.reject(error);
   }
 );

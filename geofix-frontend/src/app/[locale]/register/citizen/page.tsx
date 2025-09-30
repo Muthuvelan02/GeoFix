@@ -10,13 +10,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import LanguageSwitcher from "@/components/LanguageSwitcher"
-import { ArrowLeft, Users, AlertCircle, CheckCircle } from "lucide-react"
+import { ArrowLeft, Users, Upload, AlertCircle, CheckCircle } from "lucide-react"
 import { authService } from "@/services/authService"
 
 export default function CitizenRegisterPage() {
   const t = useTranslations()
   const router = useRouter()
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -28,6 +28,12 @@ export default function CitizenRegisterPage() {
     city: "",
     pincode: "",
     agreeToTerms: false
+  })
+
+  const [files, setFiles] = useState({
+    photo: null as File | null,
+    aadharFront: null as File | null,
+    aadharBack: null as File | null
   })
 
   const [loading, setLoading] = useState(false)
@@ -42,9 +48,17 @@ export default function CitizenRegisterPage() {
     }))
   }
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'aadharFront' | 'aadharBack') => {
+    const file = e.target.files?.[0] || null
+    setFiles(prev => ({
+      ...prev,
+      [fileType]: file
+    }))
+  }
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
       setError("Please fill in all required fields")
@@ -61,6 +75,11 @@ export default function CitizenRegisterPage() {
       return
     }
 
+    if (!files.photo || !files.aadharFront || !files.aadharBack) {
+      setError("Citizen registration requires photo and Aadhar documents")
+      return
+    }
+
     setLoading(true)
     setError(null)
 
@@ -74,14 +93,20 @@ export default function CitizenRegisterPage() {
         role: 'ROLE_CITIZEN' as const
       }
 
-      await authService.signup(signupData)
-      
+      const uploadFiles = {
+        ...(files.photo && { photo: files.photo }),
+        ...(files.aadharFront && { aadharFront: files.aadharFront }),
+        ...(files.aadharBack && { aadharBack: files.aadharBack })
+      }
+
+      await authService.signup(signupData, uploadFiles)
+
       // Auto-login after successful signup
       const loginResponse = await authService.login({
         email: formData.email,
         password: formData.password
       })
-      
+
       setSuccess(true)
       setTimeout(() => {
         // Redirect to citizen dashboard
@@ -159,7 +184,7 @@ export default function CitizenRegisterPage() {
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                   {t("register.personalInfo")}
                 </h3>
-                
+
                 {/* First Name & Last Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -323,19 +348,92 @@ export default function CitizenRegisterPage() {
                 </div>
               </div>
 
+              {/* Document Upload Section */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  Document Upload (Required)
+                </h3>
+
+                {/* Photo Upload */}
+                <div className="space-y-2">
+                  <Label htmlFor="photo" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Profile Photo *
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      id="photo"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, 'photo')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                      required
+                    />
+                    {files.photo && (
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        ✓ {files.photo.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Aadhar Front Upload */}
+                <div className="space-y-2">
+                  <Label htmlFor="aadharFront" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Aadhar Card (Front) *
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      id="aadharFront"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, 'aadharFront')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                      required
+                    />
+                    {files.aadharFront && (
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        ✓ {files.aadharFront.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Aadhar Back Upload */}
+                <div className="space-y-2">
+                  <Label htmlFor="aadharBack" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Aadhar Card (Back) *
+                  </Label>
+                  <div className="flex items-center gap-4">
+                    <Input
+                      id="aadharBack"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileChange(e, 'aadharBack')}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
+                      required
+                    />
+                    {files.aadharBack && (
+                      <span className="text-xs text-green-600 dark:text-green-400">
+                        ✓ {files.aadharBack.name}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               {/* Terms and Conditions */}
               <div className="flex items-start space-x-2">
                 <Checkbox
                   id="terms"
                   checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
                   }
                   className="mt-1"
                   required
                 />
-                <Label 
-                  htmlFor="terms" 
+                <Label
+                  htmlFor="terms"
                   className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
                 >
                   {t("register.terms")}
@@ -347,7 +445,7 @@ export default function CitizenRegisterPage() {
                 type="submit"
                 className="w-full py-3 px-4 rounded-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ backgroundColor: "#0078D7" }}
-                disabled={!formData.agreeToTerms || loading}
+                disabled={!formData.agreeToTerms || loading || !files.photo || !files.aadharFront || !files.aadharBack}
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
