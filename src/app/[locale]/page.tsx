@@ -59,7 +59,7 @@ export default function GeoFixLanding() {
                 <Link href="/register">
                   <Button
                     size="lg"
-                    className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >
                     {t("hero.cta")}
                   </Button>
@@ -68,7 +68,7 @@ export default function GeoFixLanding() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="cursor-pointer border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 px-8 py-4 text-lg font-semibold rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 bg-transparent"
+                    className="border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 px-8 py-4 text-lg font-semibold rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 bg-transparent"
                   >
                     {t("login.button")}
                   </Button>

@@ -41,6 +41,37 @@ export interface User {
 }
 
 class AuthService {
+  constructor() {
+    // Clear any expired tokens on initialization
+    this.clearExpiredTokens();
+  }
+
+  // Clear expired tokens
+  private clearExpiredTokens() {
+    // Only run in browser environment (not during SSR)
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const token = localStorage.getItem('authToken');
+      if (token) {
+        // Check if token is expired by attempting to decode it
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Date.now() / 1000;
+        
+        if (payload.exp && payload.exp < currentTime) {
+          console.log('Found expired token, clearing...');
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userData');
+        }
+      }
+    } catch (error) {
+      // If we can't decode the token, clear it anyway
+      console.log('Invalid token found, clearing...');
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+    }
+  }
+
   // Login with email or mobile
   async login(loginData: LoginRequest): Promise<LoginResponse> {
     try {
@@ -108,12 +139,15 @@ class AuthService {
 
       // Log FormData contents
       console.log('FormData contents:');
-      for (const [key, value] of formData.entries()) {
+      for (let [key, value] of formData.entries()) {
         console.log(key, value);
       }
 
-      const response = await api.post<SignupResponse>('/auth/signup', formData);
-      // Note: Don't set Content-Type header for FormData - browser will set it automatically with boundary
+      const response = await api.post<SignupResponse>('/auth/signup', formData, {
+        headers: {
+          // Let browser set Content-Type with boundary for multipart/form-data
+        }
+      });
       
       return response.data;
     } catch (error: any) {
@@ -165,35 +199,21 @@ class AuthService {
 
   // Check if user is authenticated
   isAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false;
     return !!localStorage.getItem('authToken');
   }
 
   // Get current user data from localStorage
   getCurrentUser(): { userId: number; roles: string[] } | null {
+    if (typeof window === 'undefined') return null;
     const userData = localStorage.getItem('userData');
     return userData ? JSON.parse(userData) : null;
   }
 
   // Get auth token
   getToken(): string | null {
+    if (typeof window === 'undefined') return null;
     return localStorage.getItem('authToken');
-  }
-
-  // Get dashboard path based on user role
-  getDashboardPath(): string {
-    const userData = this.getCurrentUser();
-    const userRole = userData?.roles[0];
-    
-    switch (userRole) {
-      case 'ROLE_ADMIN':
-        return '/dashboard/admin';
-      case 'ROLE_CONTRACTOR':
-        return '/dashboard/contractor';
-      case 'ROLE_CITIZEN':
-        return '/dashboard/citizen';
-      default:
-        return '/login'; // Redirect to login if role is not recognized
-    }
   }
 }
 

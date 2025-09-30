@@ -43,14 +43,22 @@ export default function CitizenLoginPage() {
         password: password
       }
 
-      await authService.login(loginData)
+      const response = await authService.login(loginData)
       
       setSuccess(true)
       
-      // Redirect to appropriate dashboard based on user role
+      // Check user role and redirect accordingly
+      const userRole = response.roles[0]
       setTimeout(() => {
-        const dashboardPath = authService.getDashboardPath()
-        router.push(dashboardPath)
+        if (userRole === 'ROLE_CITIZEN') {
+          router.push("/dashboard/citizen")
+        } else if (userRole === 'ROLE_CONTRACTOR') {
+          router.push("/dashboard/contractor")
+        } else if (userRole === 'ROLE_ADMIN') {
+          router.push("/dashboard/admin")
+        } else {
+          router.push("/dashboard")
+        }
       }, 1500)
     } catch (err: any) {
       setError(err.message || "Login failed. Please try again.")

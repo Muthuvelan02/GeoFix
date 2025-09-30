@@ -38,7 +38,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         const userRole = userData?.roles[0] || null;
         if (!userRole || !allowedRoles.includes(userRole)) {
           // Redirect to appropriate dashboard based on user role
-          const dashboardPath = authService.getDashboardPath();
+          const dashboardPath = getDashboardPath(userRole);
           router.push(dashboardPath);
           return;
         }
@@ -62,6 +62,19 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   return <>{children}</>;
+};
+
+// Helper function to get dashboard path based on role
+const getDashboardPath = (role: string | null): string => {
+  switch (role) {
+    case 'ROLE_ADMIN':
+      return '/dashboard/admin';
+    case 'ROLE_CONTRACTOR':
+      return '/dashboard/contractor';
+    case 'ROLE_CITIZEN':
+    default:
+      return '/dashboard/citizen';
+  }
 };
 
 export default ProtectedRoute;

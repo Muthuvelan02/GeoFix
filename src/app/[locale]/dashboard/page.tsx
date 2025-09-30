@@ -12,12 +12,11 @@ export default function DashboardPage() {
   }, [router])
 
   return (
-   <><html> <div className="min-h-screen flex items-center justify-center">
+    <div className="min-h-screen flex items-center justify-center">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
         <span className="text-gray-600">Redirecting...</span>
       </div>
     </div>
-    </html></>
   )
 }

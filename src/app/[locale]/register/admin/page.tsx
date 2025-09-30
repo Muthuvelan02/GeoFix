@@ -105,17 +105,15 @@ export default function AdminRegisterPage() {
       await authService.signup(signupData, uploadFiles)
       
       // Auto-login after successful signup
-      await authService.login({
+      const loginResponse = await authService.login({
         email: formData.email,
         password: formData.password
       })
       
       setSuccess(true)
-      
-      // Redirect to appropriate dashboard based on user role
       setTimeout(() => {
-        const dashboardPath = authService.getDashboardPath()
-        router.push(dashboardPath)
+        // Redirect to admin dashboard
+        router.push("/dashboard/admin")
       }, 2000)
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.")

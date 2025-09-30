@@ -15,7 +15,6 @@ export default async function DashboardLayout({
   const messages = await getMessages({ locale });
 
   return (
-    <>
     <NextIntlClientProvider messages={messages}>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
         {/* Sticky Header */}
@@ -45,7 +44,5 @@ export default async function DashboardLayout({
         </div>
       </div>
     </NextIntlClientProvider>
-    </>
   );
 }
-    
