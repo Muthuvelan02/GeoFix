@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { AuthService } from '@/lib/api/auth';
+import { useRouter, usePathname } from '@/i18n/navigation';
+import { authService } from '@/services/authService';
 import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
@@ -21,7 +21,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   useEffect(() => {
     const checkAuth = () => {
-      const isAuthenticated = AuthService.isAuthenticated();
+      const isAuthenticated = authService.isAuthenticated();
       
       if (!isAuthenticated) {
         // Store the attempted URL to redirect after login
@@ -34,7 +34,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
       // Check role-based access if roles are specified
       if (allowedRoles.length > 0) {
-        const userRole = AuthService.getUserRole();
+        const userData = authService.getCurrentUser();
+        const userRole = userData?.roles[0] || null;
         if (!userRole || !allowedRoles.includes(userRole)) {
           // Redirect to appropriate dashboard based on user role
           const dashboardPath = getDashboardPath(userRole);
@@ -48,7 +49,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }, [router, pathname, allowedRoles, redirectTo]);
 
   // Show loading spinner while checking authentication
-  const isAuthenticated = AuthService.isAuthenticated();
+  const isAuthenticated = authService.isAuthenticated();
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -66,11 +67,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 // Helper function to get dashboard path based on role
 const getDashboardPath = (role: string | null): string => {
   switch (role) {
-    case 'admin':
+    case 'ROLE_ADMIN':
       return '/dashboard/admin';
-    case 'contractor':
+    case 'ROLE_CONTRACTOR':
       return '/dashboard/contractor';
-    case 'citizen':
+    case 'ROLE_CITIZEN':
     default:
       return '/dashboard/citizen';
   }
