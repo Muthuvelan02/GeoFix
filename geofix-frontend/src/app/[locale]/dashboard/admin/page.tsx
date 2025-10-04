@@ -1,232 +1,179 @@
 "use client"
 
-import { useTranslations } from "next-intl"
-import { Button } from "@/components/ui/button"
+import React, { useState, useEffect } from "react"
+import { useRouter } from "@/i18n/navigation"
+import { useParams } from "next/navigation"
+import {
+    Shield,
+    Users,
+    HardHat,
+    FileText,
+    CheckCircle,
+    Clock,
+    AlertTriangle,
+    BarChart3
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, LogOut, User, Users, MapPin, Settings, BarChart3, Clock } from "lucide-react"
+import DashboardHeader from "@/components/DashboardHeader"
+import CollapsibleSidebar from "@/components/CollapsibleSidebar"
+import DashboardFooter from "@/components/DashboardFooter"
+import { authService } from "@/services/authService"
 
-function AdminDashboard() {
-  const t = useTranslations()
+export default function AdminDashboard() {
+    const router = useRouter()
+    const params = useParams()
+    const locale = params.locale as string || 'en'
+    const [user, setUser] = useState<any>(null)
+    const [loading, setLoading] = useState(true)
 
-  const handleLogout = async () => {
-    try {
-      // Handle logout logic here
-      console.log("Logout functionality to be implemented")
-    } catch (error) {
-      console.error("Logout failed:", error)
+    useEffect(() => {
+        const userData = authService.getCurrentUser()
+        if (!userData) {
+            router.push("/login/admin")
+            return
+        }
+
+        // Verify user has ADMIN role
+        const userRole = userData.roles[0]
+        if (userRole !== 'ROLE_ADMIN') {
+            // Redirect to appropriate dashboard
+            if (userRole === 'ROLE_CITIZEN') {
+                router.push("/dashboard/citizen")
+            } else if (userRole === 'ROLE_CONTRACTOR') {
+                router.push("/dashboard/contractor")
+            } else {
+                authService.logout()
+                router.push("/login/admin")
+            }
+            return
+        }
+
+        setUser(userData)
+        setLoading(false)
+    }, [router])
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                    <span className="text-gray-600">Loading...</span>
+                </div>
+            </div>
+        )
     }
-  }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-900 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500 rounded-lg">
-                <Shield className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Admin Dashboard
-                </h1>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Welcome back, Administrator
-                </p>
-              </div>
+    return (
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <DashboardHeader />
+            <div className="flex">
+                <CollapsibleSidebar userRole="admin" locale={locale} user={user} />
+
+                <main className="flex-1 p-8">
+                    <div className="max-w-7xl mx-auto space-y-8">
+                        {/* Welcome Section */}
+                        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                    <Shield className="h-6 w-6 text-green-600" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                        Admin Dashboard
+                                    </h1>
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        Manage tickets, users, and contractors
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                Total Tickets
+                                            </p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                            <FileText className="h-6 w-6 text-blue-600" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                Pending Review
+                                            </p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                                            <Clock className="h-6 w-6 text-orange-600" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                Total Citizens
+                                            </p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                            <Users className="h-6 w-6 text-purple-600" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                                <CardContent className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">
+                                                Contractors
+                                            </p>
+                                            <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                                        </div>
+                                        <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                                            <HardHat className="h-6 w-6 text-green-600" />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Main Content */}
+                        <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                            <CardHeader>
+                                <CardTitle className="text-lg font-semibold">Recent Activity</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-center py-12">
+                                    <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        No recent activity
+                                    </p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <DashboardFooter />
+                </main>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </Button>
-          </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Profile Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Profile Info
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <p><strong>Name:</strong> Admin User</p>
-                <p><strong>Email:</strong> admin@example.com</p>
-                <p><strong>Role:</strong> Administrator</p>
-                <p><strong>Status:</strong>
-                  <span className="ml-2 px-2 py-1 rounded-full text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
-                    Active
-                  </span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* System Stats */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                System Stats
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Total Users:</span>
-                  <span className="font-semibold">--</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Active Reports:</span>
-                  <span className="font-semibold">--</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Contractors:</span>
-                  <span className="font-semibold">--</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Pending Issues:</span>
-                  <span className="font-semibold">--</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                Quick Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button className="w-full text-sm" variant="outline" size="sm">
-                  Manage Users
-                </Button>
-                <Button className="w-full text-sm" variant="outline" size="sm">
-                  View Reports
-                </Button>
-                <Button className="w-full text-sm" variant="outline" size="sm">
-                  System Settings
-                </Button>
-                <Button className="w-full text-sm" variant="outline" size="sm">
-                  Analytics
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Recent Activity */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Recent Activity
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span>Admin logged in</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <span>No recent activity</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                  <span>System monitoring</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Management Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          {/* User Management */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                User Management
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Manage citizens, contractors, and admin users. Create, edit, or deactivate accounts.
-              </p>
-              <Button className="w-full">Manage Users</Button>
-            </CardContent>
-          </Card>
-
-          {/* System Configuration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                System Config
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Configure system settings, API keys, and application parameters.
-              </p>
-              <Button className="w-full">System Settings</Button>
-            </CardContent>
-          </Card>
-
-          {/* Reports & Analytics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
-                Analytics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                View system analytics, user statistics, and infrastructure reports.
-              </p>
-              <Button className="w-full">View Analytics</Button>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Welcome Message */}
-        <Card className="mt-8">
-          <CardContent className="p-8">
-            <div className="text-center">
-              <Shield className="h-16 w-16 mx-auto text-green-500 mb-4" />
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                GeoFix Admin Portal
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Welcome to the administrative dashboard for GeoFix. From here you can manage
-                users, monitor system performance, configure settings, and oversee all aspects
-                of the infrastructure reporting platform.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
-  )
+    )
 }
-
-// Export the component directly without auth protection
-export default AdminDashboard

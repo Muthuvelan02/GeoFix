@@ -1,14 +1,36 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter } from "@/i18n/navigation"
+import { useParams } from "next/navigation"
+import { authService } from "@/services/authService"
 
 export default function DashboardPage() {
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string || 'en'
 
   useEffect(() => {
-    // For now, redirect to citizen dashboard as default
-    router.push("/dashboard/citizen")
+    // Redirect based on user role
+    const user = authService.getCurrentUser()
+
+    if (!user) {
+      router.push("/login")
+      return
+    }
+
+    const userRole = user.roles[0]
+
+    if (userRole === 'ROLE_CITIZEN') {
+      router.push("/dashboard/citizen")
+    } else if (userRole === 'ROLE_CONTRACTOR') {
+      router.push("/dashboard/contractor")
+    } else if (userRole === 'ROLE_ADMIN') {
+      router.push("/dashboard/admin")
+    } else {
+      // Default fallback
+      router.push("/login")
+    }
   }, [router])
 
   return (

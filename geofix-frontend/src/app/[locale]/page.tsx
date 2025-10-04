@@ -31,7 +31,7 @@ export default function GeoFixLanding() {
   return (
     <div
       key={locale}
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950"
+      className="select-none min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950"
     >
       <Nav />
 
@@ -41,11 +41,11 @@ export default function GeoFixLanding() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.05),transparent_50%)]"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.1),transparent_50%)] dark:bg-[radial-gradient(circle_at_70%_80%,rgba(16,185,129,0.05),transparent_50%)]"></div>
 
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-8">
               <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-tight">
-                <span className="text-white to-emerald-600 bg-clip-text">
+                <span className="  bg-clip-text">
                   {t("hero.title").split(" ")[0]}
                 </span>{" "}
                 <span className="text-gray-900 dark:text-white">{t("hero.title").split(" ").slice(1).join(" ")}</span>
@@ -59,7 +59,7 @@ export default function GeoFixLanding() {
                 <Link href="/register">
                   <Button
                     size="lg"
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                    className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                   >
                     {t("hero.cta")}
                   </Button>
@@ -68,14 +68,14 @@ export default function GeoFixLanding() {
                   <Button
                     variant="outline"
                     size="lg"
-                    className="border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 px-8 py-4 text-lg font-semibold rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 bg-transparent"
+                    className="cursor-pointer border-2 border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 px-8 py-4 text-lg font-semibold rounded-2xl hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-all duration-300 bg-transparent"
                   >
                     {t("login.button")}
                   </Button>
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center gap-6 pt-4">
+              <div className="flex flex-wrap items-center gap-6 pt-4 cursor-default">
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-200/50 dark:border-gray-700/50">
                   <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                   <span className="font-medium">Free to use</span>
@@ -101,6 +101,7 @@ export default function GeoFixLanding() {
                     height={400}
                     className="w-full h-auto object-cover"
                     priority
+                    unoptimized
                   />
                 </div>
 
@@ -128,7 +129,7 @@ export default function GeoFixLanding() {
         id="features"
         className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50 rounded-full text-blue-700 dark:text-blue-300 text-sm font-medium mb-6 border border-blue-200/50 dark:border-blue-800/50">
               <span>✨</span> Platform Features
@@ -251,7 +252,7 @@ export default function GeoFixLanding() {
 
       {/* Community Impact Section */}
       <section className="py-24 bg-gradient-to-b from-gray-50 to-white dark:from-gray-900 dark:to-gray-950">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6 border border-emerald-200/50 dark:border-emerald-800/50">
               <span className="animate-pulse">🌟</span> Real Impact
@@ -333,7 +334,7 @@ export default function GeoFixLanding() {
 
       {/* Community Benefits Section */}
       <section className="py-24 bg-gradient-to-br from-slate-50 via-blue-50/30 to-emerald-50/30 dark:from-gray-950 dark:via-blue-950/30 dark:to-emerald-950/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-950/50 dark:to-pink-950/50 rounded-full text-purple-700 dark:text-purple-300 text-sm font-medium mb-6 border border-purple-200/50 dark:border-purple-800/50">
               <span>🏘️</span> Community Impact
@@ -435,7 +436,7 @@ export default function GeoFixLanding() {
 
       {/* Stats Section */}
       <section id="impact" className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-950/50 dark:to-emerald-950/50 rounded-full text-green-700 dark:text-green-300 text-sm font-medium mb-6 border border-green-200/50 dark:border-green-800/50">
               <span>📊</span> By the Numbers
@@ -554,7 +555,7 @@ export default function GeoFixLanding() {
         id="how-it-works"
         className="py-24 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 dark:from-blue-950/30 dark:via-gray-950 dark:to-purple-950/30"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-24">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full text-white text-sm font-medium mb-6 shadow-lg">
               <span>📱</span> Simple Process
@@ -657,7 +658,7 @@ export default function GeoFixLanding() {
               <Link href="/login">
                 <Button
                   size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  className="cursor-pointer bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
                   {t("common.startReportingNow")}
                 </Button>
@@ -672,7 +673,7 @@ export default function GeoFixLanding() {
         id="safety"
         className="py-24 bg-gradient-to-br from-gray-50 via-blue-50/30 to-emerald-50/30 dark:from-gray-900 dark:via-blue-950/30 dark:to-emerald-950/30"
       >
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-950/50 dark:to-pink-950/50 rounded-full text-purple-700 dark:text-purple-300 text-sm font-medium mb-6 border border-purple-200/50 dark:border-purple-800/50">
               <span>🛡️</span> Safety & Privacy
@@ -757,7 +758,7 @@ export default function GeoFixLanding() {
 
       {/* FAQ Section */}
       <section className="py-24 bg-gradient-to-b from-white to-gray-50 dark:from-gray-950 dark:to-gray-900">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="cursor-default container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-950/50 dark:to-purple-950/50 rounded-full text-blue-700 dark:text-blue-300 text-sm font-medium mb-6 border border-blue-200/50 dark:border-blue-800/50">
               <span>❓</span> Frequently Asked Questions
@@ -797,7 +798,7 @@ export default function GeoFixLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-br from-gray-900 via-blue-950/50 to-emerald-950/50 dark:from-gray-950 dark:via-blue-950/30 dark:to-emerald-950/30 text-white relative overflow-hidden">
+      <footer className="select-none cursor-default bg-gradient-to-br from-gray-900 via-blue-950/50 to-emerald-950/50 dark:from-gray-950 dark:via-blue-950/30 dark:to-emerald-950/30 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-blue-950/20 via-transparent to-green-950/20"></div>
         <div className="relative z-10 py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">

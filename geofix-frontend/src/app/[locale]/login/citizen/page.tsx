@@ -4,6 +4,7 @@ import React from "react"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Link, useRouter } from "@/i18n/navigation"
+import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -16,7 +17,9 @@ import { authService } from "@/services/authService"
 export default function CitizenLoginPage() {
   const t = useTranslations()
   const router = useRouter()
-  
+  const params = useParams()
+  const locale = params.locale as string || 'en'
+
   // Form state
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -28,7 +31,7 @@ export default function CitizenLoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!email || !password) {
       setError("Please fill in all required fields")
       return
@@ -44,24 +47,35 @@ export default function CitizenLoginPage() {
       }
 
       const response = await authService.login(loginData)
-      
-      setSuccess(true)
-      
-      // Check user role and redirect accordingly
+
+      // Check user role BEFORE showing success
       const userRole = response.roles[0]
+
+      if (userRole !== 'ROLE_CITIZEN') {
+        // User is not a citizen - show generic error
+        setError("Invalid credentials. Please check your email and password.")
+
+        // Logout the user since they shouldn't be here
+        authService.logout()
+        setLoading(false)
+        return
+      }
+
+      setSuccess(true)
+
+      // Redirect to citizen dashboard
       setTimeout(() => {
-        if (userRole === 'ROLE_CITIZEN') {
-          router.push("/dashboard/citizen")
-        } else if (userRole === 'ROLE_CONTRACTOR') {
-          router.push("/dashboard/contractor")
-        } else if (userRole === 'ROLE_ADMIN') {
-          router.push("/dashboard/admin")
-        } else {
-          router.push("/dashboard")
-        }
+        router.push("/dashboard/citizen")
       }, 1500)
     } catch (err: any) {
-      setError(err.message || "Login failed. Please try again.")
+      // Generic error message for security
+      if (err.message?.includes('Server error') || err.message?.includes('500')) {
+        setError("Invalid credentials. Please check your email and password.")
+      } else if (err.message?.includes('Cannot connect') || err.message?.includes('ECONNREFUSED')) {
+        setError("Service temporarily unavailable. Please try again later.")
+      } else {
+        setError("Invalid credentials. Please check your email and password.")
+      }
       console.error("Login failed:", err)
     } finally {
       setLoading(false)
