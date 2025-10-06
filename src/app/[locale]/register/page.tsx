@@ -13,28 +13,36 @@ export default function RegisterPage() {
 
   const roles = [
     {
-      id: "citizen",
-      label: t("register.roles.citizen.label"),
-      description: t("register.roles.citizen.desc"),
-      color: "#0078D7",
-      icon: Users,
-      href: "/register/citizen"
+      id: "superadmin",
+      label: "SuperAdmin",
+      description: "Complete system control and administration",
+      color: "#DC2626", // red-600
+      icon: Shield,
+      href: "/register/superadmin"
     },
     {
-      id: "contractor", 
-      label: t("register.roles.contractor.label"),
-      description: t("register.roles.contractor.desc"),
-      color: "#F39C12",
+      id: "admin",
+      label: "Admin",
+      description: "System administration and contractor management",
+      color: "#EA580C", // orange-600
+      icon: Shield,
+      href: "/register/admin"
+    },
+    {
+      id: "contractor",
+      label: "Contractor",
+      description: "Infrastructure project execution and worker management",
+      color: "#F59E0B", // amber-500
       icon: HardHat,
       href: "/register/contractor"
     },
     {
-      id: "admin",
-      label: t("register.roles.admin.label"), 
-      description: t("register.roles.admin.desc"),
-      color: "#27AE60",
-      icon: Shield,
-      href: "/register/admin"
+      id: "citizen",
+      label: "Citizen",
+      description: "Report civic issues and track resolution progress",
+      color: "#0078D7", // blue
+      icon: Users,
+      href: "/register/citizen"
     }
   ]
 
@@ -58,20 +66,20 @@ export default function RegisterPage() {
         <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4">
             <CardTitle className="text-3xl font-bold text-gray-900 dark:text-white">
-              {t("register.title")}
+              GeoFix Registration
             </CardTitle>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">
-              {t("register.subtitle")}
+            <p className="text-gray-600 dark:text-gray-400">
+              Join the GeoFix platform to report and manage civic issues
             </p>
           </CardHeader>
 
           <CardContent className="space-y-6">
             <div className="text-center mb-8">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                {t("register.selectRole")}
+                Select Your Role
               </h3>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Choose your role to create your account
+                Choose your role to get started with GeoFix
               </p>
             </div>
 

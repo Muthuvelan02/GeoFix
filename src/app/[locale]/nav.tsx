@@ -1,10 +1,10 @@
 "use client"
 import * as React from "react"
-import {useTranslations} from "next-intl"
+import { useTranslations } from "next-intl"
 import { Moon, Sun, Menu } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Link } from "@/i18n/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,11 +50,10 @@ export default function Nav() {
 
   return (
     <nav
-      className={`sticky top-0 z-50 transition-all duration-300 border-b ${
-        scrolled
-          ? "glass border-gray-200 dark:border-gray-800"
-          : "bg-white dark:bg-gray-950 border-transparent"
-      }`}
+      className={`sticky top-0 z-50 transition-all duration-300 border-b ${scrolled
+        ? "glass border-gray-200 dark:border-gray-800"
+        : "bg-white dark:bg-gray-950 border-transparent"
+        }`}
     >
       {/* Scroll progress bar */}
       <div
@@ -70,7 +69,7 @@ export default function Nav() {
               <h1 className="text-2xl font-bold text-[#0078D7] tracking-tight transition-transform will-change-transform hover:scale-[1.01]">
                 GeoFix
               </h1>
-            
+
             </Link>
           </div>
 
@@ -96,20 +95,25 @@ export default function Nav() {
               ))}
             </div>
 
-            
+
 
             {/* CTA */}
             <Button asChild variant="brand" className="cursor-pointer">
               <Link href="#how-it-works">{t("nav.report")}</Link>
             </Button>
 
+            {/* Admin Portal Link */}
+            <Button asChild variant="outline" size="sm" className="cursor-pointer border-gray-300 hover:border-red-400 text-gray-700 hover:text-red-600 dark:text-gray-300 dark:hover:text-red-400">
+              <Link href="/admin">Admin Portal</Link>
+            </Button>
+
             {/* Language Switcher */}
             <LanguageSwitcher />
 
             {/* Theme Toggle */}
-      <DropdownMenu>
+            <DropdownMenu>
               <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="cursor-pointer relative">
+                <Button variant="ghost" size="icon" className="cursor-pointer relative">
                   <Sun className="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
                   <Moon className="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
                   <span className="sr-only">Toggle theme</span>

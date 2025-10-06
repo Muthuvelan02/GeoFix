@@ -19,12 +19,20 @@ export interface SignupRequest {
   mobile: string;
   password: string;
   address: string;
-  role: 'ROLE_CITIZEN' | 'ROLE_CONTRACTOR' | 'ROLE_ADMIN';
-  isAdmin?: boolean;
-  referralCode?: string;
-  storeId?: number;
-  referredByDeliveryBoyId?: number;
-  storeid?: number;
+  role: 'ROLE_CITIZEN' | 'ROLE_CONTRACTOR' | 'ROLE_ADMIN' | 'ROLE_SUPERADMIN' | 'ROLE_WORKER';
+  // Documents for contractor/admin verification
+  photoUrl?: string;
+  aadharFrontUrl?: string;
+  aadharBackUrl?: string;
+  // Admin specific fields
+  department?: string;
+  employeeId?: string;
+  // Contractor specific fields
+  companyName?: string;
+  specialization?: string;
+  description?: string;
+  // Worker specific fields (created by contractor)
+  createdByContractorId?: number;
 }
 
 export interface SignupResponse {
@@ -214,6 +222,173 @@ class AuthService {
   getToken(): string | null {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('authToken');
+  }
+
+  // Register admin with special admin code
+  async registerAdmin(adminData: {
+    name: string;
+    email: string;
+    mobile: string;
+    password: string;
+    address: string;
+    role: 'ROLE_ADMIN';
+    isAdmin: boolean;
+    adminCode: string;
+    department: string;
+    employeeId: string;
+  }): Promise<SignupResponse> {
+    try {
+      console.log('Admin registration attempt with:', { 
+        email: adminData.email, 
+        mobile: adminData.mobile,
+        department: adminData.department 
+      });
+      
+      const response = await api.post<SignupResponse>('/auth/register-admin', adminData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Admin registration error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        throw new Error('Invalid admin registration data. Please check all fields.');
+      } else if (error.response?.status === 401) {
+        throw new Error('Invalid admin authorization code.');
+      } else if (error.response?.status === 409) {
+        throw new Error('An admin with this email or mobile already exists.');
+      } else {
+        throw new Error('Admin registration failed. Please try again later.');
+      }
+    }
+  }
+
+  // Register superadmin with master key
+  async registerSuperadmin(superadminData: {
+    name: string;
+    email: string;
+    mobile: string;
+    password: string;
+    address: string;
+    role: 'ROLE_SUPERADMIN';
+    isAdmin: boolean;
+    masterKey: string;
+    organization: string;
+    designation: string;
+    employeeId: string;
+    securityQuestions: Array<{ question: string; answer: string }>;
+  }): Promise<SignupResponse> {
+    try {
+      console.log('Superadmin registration attempt with:', { 
+        email: superadminData.email, 
+        mobile: superadminData.mobile,
+        organization: superadminData.organization 
+      });
+      
+      const response = await api.post<SignupResponse>('/auth/register-superadmin', superadminData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Superadmin registration error:', error);
+      console.error('Error response:', error.response?.data);
+      
+      if (error.response?.data?.error) {
+        throw new Error(error.response.data.error);
+      } else if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else if (error.response?.status === 400) {
+        throw new Error('Invalid superadmin registration data. Please check all fields.');
+      } else if (error.response?.status === 401) {
+        throw new Error('Invalid master key. Access denied.');
+      } else if (error.response?.status === 409) {
+        throw new Error('A superadmin with this email or mobile already exists.');
+      } else {
+        throw new Error('Superadmin registration failed. Please try again later.');
+      }
+    }
+  }
+
+  // Get user profile with role-specific data
+  async getUserProfile(): Promise<any> {
+    try {
+      const response = await api.get('/auth/profile');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get profile error:', error);
+      throw new Error('Failed to fetch user profile.');
+    }
+  }
+
+  // Update user profile
+  async updateProfile(profileData: any): Promise<any> {
+    try {
+      const response = await api.put('/auth/profile', profileData);
+      return response.data;
+    } catch (error: any) {
+      console.error('Update profile error:', error);
+      throw new Error('Failed to update profile.');
+    }
+  }
+
+  // Change password
+  async changePassword(currentPassword: string, newPassword: string): Promise<any> {
+    try {
+      const response = await api.post('/auth/change-password', {
+        currentPassword,
+        newPassword
+      });
+      return response.data;
+    } catch (error: any) {
+      console.error('Change password error:', error);
+      if (error.response?.status === 400) {
+        throw new Error('Current password is incorrect.');
+      }
+      throw new Error('Failed to change password.');
+    }
+  }
+
+  // Admin specific methods
+  async getSystemStats(): Promise<any> {
+    try {
+      const response = await api.get('/admin/system-stats');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get system stats error:', error);
+      throw new Error('Failed to fetch system statistics.');
+    }
+  }
+
+  // Superadmin specific methods
+  async getAllUsers(): Promise<any> {
+    try {
+      const response = await api.get('/superadmin/users');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get all users error:', error);
+      throw new Error('Failed to fetch users.');
+    }
+  }
+
+  async approveUser(userId: number): Promise<any> {
+    try {
+      const response = await api.post(`/superadmin/users/${userId}/approve`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Approve user error:', error);
+      throw new Error('Failed to approve user.');
+    }
+  }
+
+  async suspendUser(userId: number): Promise<any> {
+    try {
+      const response = await api.post(`/superadmin/users/${userId}/suspend`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Suspend user error:', error);
+      throw new Error('Failed to suspend user.');
+    }
   }
 }
 

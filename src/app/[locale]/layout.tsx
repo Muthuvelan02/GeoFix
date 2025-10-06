@@ -29,10 +29,10 @@ type Props = {
 
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
-  
+
   // Validate locale
   if (!locales.includes(locale as any)) notFound();
-  
+
   // Set the locale for the request
   setRequestLocale(locale);
 
@@ -48,6 +48,7 @@ export default async function LocaleLayout({ children, params }: Props) {
           fontFamily:
             'var(--font-poppins), system-ui, -apple-system, Segoe UI, Roboto, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
         }}
+        suppressHydrationWarning
       >
         <ErrorBoundary>
           <ReactQueryProvider>

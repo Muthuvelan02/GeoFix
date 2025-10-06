@@ -21,7 +21,7 @@ export default function LoginPage() {
       href: "/login/citizen"
     },
     {
-      id: "contractor", 
+      id: "contractor",
       label: t("login.roles.contractor.label"),
       description: t("login.roles.contractor.desc"),
       color: "#F39C12",
@@ -29,12 +29,12 @@ export default function LoginPage() {
       href: "/login/contractor"
     },
     {
-      id: "admin",
-      label: t("login.roles.admin.label"), 
-      description: t("login.roles.admin.desc"),
-      color: "#27AE60",
-      icon: Shield,
-      href: "/login/admin"
+      id: "worker",
+      label: "Worker",
+      description: "Access your assigned tasks and work dashboard",
+      color: "#FF6B35",
+      icon: HardHat,
+      href: "/login/worker"
     }
   ]
 
@@ -123,7 +123,7 @@ export default function LoginPage() {
             </div>
 
             {/* Additional Info */}
-            <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700 space-y-3">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {t("login.noAccount")}{" "}
                 <Link
@@ -133,6 +133,15 @@ export default function LoginPage() {
                   {t("login.create")}
                 </Link>
               </p>
+              <div className="pt-2">
+                <Link
+                  href="/admin"
+                  className="inline-flex items-center gap-2 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium transition-colors"
+                >
+                  <Shield className="h-4 w-4" />
+                  System Administrator? Access Admin Portal
+                </Link>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -10,6 +10,11 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
   (config) => {
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    }
+    
     // Don't add auth token for signup and login endpoints
     const noAuthEndpoints = ['/auth/signup', '/auth/login'];
     const isNoAuthEndpoint = noAuthEndpoints.some(endpoint => config.url?.includes(endpoint));
@@ -19,6 +24,8 @@ api.interceptors.request.use(
       const token = localStorage.getItem('authToken');
       if (token && !isNoAuthEndpoint) {
         config.headers.Authorization = `Bearer ${token}`;
+      } else if (!token && !isNoAuthEndpoint) {
+        console.warn('⚠️ No auth token found for authenticated endpoint:', config.url);
       }
     }
     
@@ -41,8 +48,19 @@ api.interceptors.request.use(
 
 // Response interceptor for error handling
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+    }
+    return response;
+  },
   (error) => {
+    // Debug logging in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url} - ${error.response?.status || 'Network Error'}`);
+      console.error('Error details:', error.response?.data);
+    }
     // Only handle localStorage operations in browser environment
     if (typeof window !== 'undefined') {
       if (error.response?.status === 401) {

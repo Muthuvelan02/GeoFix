@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "GeoFix - Report, Track, and Fix Civic Issues",
+  title: "GeoFix - Report, Track, and Fix Civic Tickets",
   description: "Connecting citizens, contractors, and municipal officers for a cleaner, safer city.",
 };
 

@@ -1,292 +1,127 @@
 'use client';
 
-import { useParams, usePathname } from 'next/navigation';
+import React from 'react';
 import Link from 'next/link';
-import { 
-  Home, 
-  FileText, 
-  Settings, 
-  Users, 
-  BarChart3, 
-  MapPin,
-  Shield,
-  HelpCircle,
-  PlusCircle,
-  Clock,
-  CheckCircle,
-  AlertTriangle
+import { usePathname } from 'next/navigation';
+import {
+    Home,
+    Users,
+    MapPin,
+    AlertTriangle,
+    BarChart3,
+    Settings,
+    HelpCircle,
+    FileText,
+    CheckCircle,
+    Clock,
+    Building,
+    Shield,
+    UserCheck,
+    Database
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
+interface MenuItem {
+    name: string;
+    href: string;
+    icon: any;
+    badge?: string;
+}
+
 interface DashboardSidebarProps {
-  isMobile?: boolean;
+    userRole: 'admin' | 'citizen' | 'contractor' | 'superadmin';
+    locale: string;
 }
 
-export default function DashboardSidebar({ isMobile = false }: DashboardSidebarProps) {
-  const params = useParams();
-  const pathname = usePathname();
-  const locale = params?.locale as string;
+const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ userRole, locale }) => {
+    const pathname = usePathname();
 
-  // Determine user role from pathname (this would typically come from auth/context)
-  const getUserRole = () => {
-    if (pathname.includes('/dashboard/citizen')) return 'citizen';
-    if (pathname.includes('/dashboard/contractor')) return 'contractor';
-    if (pathname.includes('/dashboard/admin')) return 'admin';
-    return 'citizen'; // default
-  };
+    const getMenuItems = (role: string): MenuItem[] => {
+        switch (role) {
+            case 'admin':
+                return [
+                    { name: 'Overview', href: `/${locale}/dashboard/admin`, icon: Home },
+                    { name: 'Issue Management', href: `/${locale}/dashboard/admin/issues`, icon: AlertTriangle },
+                    { name: 'User Management', href: `/${locale}/dashboard/admin/users`, icon: Users },
+                    { name: 'Contractor Management', href: `/${locale}/dashboard/admin/contractors`, icon: Building },
+                    { name: 'Analytics', href: `/${locale}/dashboard/admin/analytics`, icon: BarChart3 },
+                    { name: 'Reports', href: `/${locale}/dashboard/admin/reports`, icon: FileText },
+                    { name: 'Settings', href: `/${locale}/dashboard/admin/settings`, icon: Settings },
+                ];
 
-  const userRole = getUserRole();
+            case 'superadmin':
+                return [
+                    { name: 'Overview', href: `/${locale}/dashboard/superadmin`, icon: Home },
+                    { name: 'System Management', href: `/${locale}/dashboard/superadmin/system`, icon: Database },
+                    { name: 'Admin Management', href: `/${locale}/dashboard/superadmin/admins`, icon: Shield },
+                    { name: 'Platform Analytics', href: `/${locale}/dashboard/superadmin/analytics`, icon: BarChart3 },
+                    { name: 'Global Settings', href: `/${locale}/dashboard/superadmin/settings`, icon: Settings },
+                ];
 
-  // Navigation items based on user role
-  const getNavigationItems = () => {
-    const baseItems = [
-      {
-        href: `/${locale}/dashboard`,
-        icon: Home,
-        label: 'Dashboard Overview',
-        description: 'Main dashboard view'
-      }
-    ];
+            case 'contractor':
+                return [
+                    { name: 'Dashboard', href: `/${locale}/dashboard/contractor`, icon: Home },
+                    { name: 'Assigned Issues', href: `/${locale}/dashboard/contractor/issues`, icon: AlertTriangle, badge: '5' },
+                    { name: 'Completed Work', href: `/${locale}/dashboard/contractor/completed`, icon: CheckCircle },
+                    { name: 'Schedule', href: `/${locale}/dashboard/contractor/schedule`, icon: Clock },
+                    { name: 'Performance', href: `/${locale}/dashboard/contractor/performance`, icon: BarChart3 },
+                    { name: 'Profile', href: `/${locale}/dashboard/contractor/profile`, icon: UserCheck },
+                ];
 
-    if (userRole === 'citizen') {
-      return [
-        ...baseItems,
-        {
-          href: `/${locale}/dashboard/citizen`,
-          icon: Home,
-          label: 'My Dashboard',
-          description: 'Personal dashboard and activity'
-        },
-        {
-          href: `/${locale}/dashboard/citizen/report`,
-          icon: PlusCircle,
-          label: 'Report Issue',
-          description: 'Submit a new issue report'
-        },
-        {
-          href: `/${locale}/dashboard/citizen/issues`,
-          icon: FileText,
-          label: 'My Issues',
-          description: 'View and manage your reports'
-        },
-        {
-          href: `/${locale}/dashboard/citizen/map`,
-          icon: MapPin,
-          label: 'Community Map',
-          description: 'Explore issues in your area'
+            case 'citizen':
+            default:
+                return [
+                    { name: 'Dashboard', href: `/${locale}/dashboard/citizen`, icon: Home },
+                    { name: 'Report Issue', href: `/${locale}/dashboard/citizen/report`, icon: AlertTriangle },
+                    { name: 'My Reports', href: `/${locale}/dashboard/citizen/reports`, icon: FileText, badge: '3' },
+                    { name: 'Track Issues', href: `/${locale}/dashboard/citizen/track`, icon: MapPin },
+                    { name: 'Community', href: `/${locale}/dashboard/citizen/community`, icon: Users },
+                    { name: 'Help', href: `/${locale}/dashboard/citizen/help`, icon: HelpCircle },
+                ];
         }
-      ];
-    }
+    };
 
-    if (userRole === 'contractor') {
-      return [
-        ...baseItems,
-        {
-          href: `/${locale}/dashboard/contractor`,
-          icon: Home,
-          label: 'Work Dashboard',
-          description: 'Assigned work and progress'
-        },
-        {
-          href: `/${locale}/dashboard/contractor/assigned`,
-          icon: Clock,
-          label: 'Assigned Issues',
-          description: 'Issues assigned to you'
-        },
-        {
-          href: `/${locale}/dashboard/contractor/completed`,
-          icon: CheckCircle,
-          label: 'Completed Work',
-          description: 'Your completed projects'
-        },
-        {
-          href: `/${locale}/dashboard/contractor/schedule`,
-          icon: BarChart3,
-          label: 'Schedule',
-          description: 'Work schedule and planning'
-        }
-      ];
-    }
+    const menuItems = getMenuItems(userRole);
 
-    if (userRole === 'admin') {
-      return [
-        ...baseItems,
-        {
-          href: `/${locale}/dashboard/admin`,
-          icon: Home,
-          label: 'Admin Dashboard',
-          description: 'System overview and management'
-        },
-        {
-          href: `/${locale}/dashboard/admin/issues`,
-          icon: FileText,
-          label: 'All Issues',
-          description: 'Manage all reported issues'
-        },
-        {
-          href: `/${locale}/dashboard/admin/contractors`,
-          icon: Users,
-          label: 'Contractors',
-          description: 'Manage contractor assignments'
-        },
-        {
-          href: `/${locale}/dashboard/admin/analytics`,
-          icon: BarChart3,
-          label: 'Analytics',
-          description: 'System performance and reports'
-        },
-        {
-          href: `/${locale}/dashboard/admin/users`,
-          icon: Shield,
-          label: 'User Management',
-          description: 'Manage users and permissions'
-        }
-      ];
-    }
+    return (
+        <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 lg:pt-16 lg:bg-white lg:dark:bg-gray-900 lg:border-r lg:border-gray-200 lg:dark:border-gray-700">
+            <div className="flex-1 flex flex-col min-h-0 overflow-y-auto">
+                <nav className="flex-1 px-4 py-6 space-y-2">
+                    {menuItems.map((item) => {
+                        const isActive = pathname === item.href;
+                        return (
+                            <Link key={item.name} href={item.href}>
+                                <Button
+                                    variant={isActive ? "secondary" : "ghost"}
+                                    className={cn(
+                                        "w-full justify-start h-10",
+                                        isActive && "bg-primary/10 text-primary hover:bg-primary/20"
+                                    )}
+                                >
+                                    <item.icon className="h-4 w-4 mr-3" />
+                                    <span className="flex-1 text-left">{item.name}</span>
+                                    {item.badge && (
+                                        <span className="ml-auto bg-primary text-primary-foreground text-xs rounded-full px-2 py-1">
+                                            {item.badge}
+                                        </span>
+                                    )}
+                                </Button>
+                            </Link>
+                        );
+                    })}
+                </nav>
 
-    return baseItems;
-  };
-
-  const navigationItems = getNavigationItems();
-
-  const isActiveRoute = (href: string) => {
-    if (href === `/${locale}/dashboard`) {
-      return pathname === href;
-    }
-    return pathname.startsWith(href);
-  };
-
-  return (
-    <aside className={cn(
-      "bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col",
-      isMobile ? "w-64 h-full" : "hidden lg:flex lg:w-64 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)]"
-    )}>
-      {/* Sidebar Header */}
-      <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">
-              {userRole === 'citizen' ? 'C' : userRole === 'contractor' ? 'W' : 'A'}
-            </span>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white capitalize">
-              {userRole} Portal
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Welcome back
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navigationItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = isActiveRoute(item.href);
-          
-          return (
-            <Link key={item.href} href={item.href}>
-              <Button
-                variant={isActive ? "secondary" : "ghost"}
-                className={cn(
-                  "w-full justify-start h-auto p-3 text-left",
-                  isActive && "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                )}
-              >
-                <Icon className={cn(
-                  "h-5 w-5 mr-3 flex-shrink-0",
-                  isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
-                )} />
-                <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    "text-sm font-medium truncate",
-                    isActive ? "text-blue-700 dark:text-blue-300" : "text-gray-700 dark:text-gray-300"
-                  )}>
-                    {item.label}
-                  </p>
-                  <p className={cn(
-                    "text-xs truncate mt-0.5",
-                    isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"
-                  )}>
-                    {item.description}
-                  </p>
+                {/* Footer section */}
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-xs text-muted-foreground text-center">
+                        <p>GeoFix v1.0</p>
+                        <p>© 2025 GeoFix Platform</p>
+                    </div>
                 </div>
-              </Button>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Sidebar Footer */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <div className="space-y-2">
-          <Link href={`/${locale}/dashboard/settings`}>
-            <Button variant="ghost" className="w-full justify-start">
-              <Settings className="h-4 w-4 mr-3" />
-              Settings
-            </Button>
-          </Link>
-          
-          <Link href={`/${locale}/help`}>
-            <Button variant="ghost" className="w-full justify-start">
-              <HelpCircle className="h-4 w-4 mr-3" />
-              Help & Support
-            </Button>
-          </Link>
-        </div>
-
-        {/* Quick Stats (for non-mobile) */}
-        {!isMobile && (
-          <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">
-              Quick Stats
-            </h4>
-            <div className="space-y-1">
-              {userRole === 'citizen' && (
-                <>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Active Reports</span>
-                    <span className="font-medium text-gray-900 dark:text-white">3</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Resolved</span>
-                    <span className="font-medium text-green-600 dark:text-green-400">12</span>
-                  </div>
-                </>
-              )}
-              
-              {userRole === 'contractor' && (
-                <>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Assigned</span>
-                    <span className="font-medium text-blue-600 dark:text-blue-400">5</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Completed</span>
-                    <span className="font-medium text-green-600 dark:text-green-400">28</span>
-                  </div>
-                </>
-              )}
-              
-              {userRole === 'admin' && (
-                <>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Total Issues</span>
-                    <span className="font-medium text-gray-900 dark:text-white">147</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 dark:text-gray-300">Pending</span>
-                    <span className="font-medium text-orange-600 dark:text-orange-400">23</span>
-                  </div>
-                </>
-              )}
             </div>
-          </div>
-        )}
-      </div>
-    </aside>
-  );
-}
+        </aside>
+    );
+};
+
+export default DashboardSidebar;

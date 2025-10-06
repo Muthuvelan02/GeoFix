@@ -1,508 +1,465 @@
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { useTranslations } from "next-intl"
-import { Link, useRouter } from "@/i18n/navigation"
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import LanguageSwitcher from "@/components/LanguageSwitcher"
-import { ArrowLeft, Shield, Upload, AlertCircle, CheckCircle } from "lucide-react"
-import { authService } from "@/services/authService"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { authService, SignupRequest } from "@/services/authService"
+import { Link } from "@/i18n/navigation"
+import {
+  Shield,
+  Upload,
+  FileImage,
+  AlertCircle,
+  CheckCircle2,
+  ArrowLeft,
+  Users,
+  UserCheck
+} from "lucide-react"
 
-export default function AdminRegisterPage() {
-  const t = useTranslations()
+export default function AdminRegister() {
   const router = useRouter()
-  
+
+  // Form state
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
-    phone: "",
     password: "",
     confirmPassword: "",
+    phoneNumber: "",
     department: "",
-    employeeId: "",
-    address: "",
-    city: "",
-    pincode: "",
-    agreeToTerms: false
+    employeeId: ""
   })
 
+  // File uploads
   const [files, setFiles] = useState({
     photo: null as File | null,
     aadharFront: null as File | null,
     aadharBack: null as File | null
   })
 
+  // UI state
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [success, setSuccess] = useState("")
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }))
+  // Validation
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    if (!formData.name.trim()) newErrors.name = "Full name is required"
+    if (!formData.email.trim()) newErrors.email = "Email is required"
+    if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Invalid email format"
+    if (!formData.password) newErrors.password = "Password is required"
+    if (formData.password.length < 8) newErrors.password = "Password must be at least 8 characters"
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match"
+    }
+    if (!formData.phoneNumber.trim()) newErrors.phoneNumber = "Phone number is required"
+    if (!/^\d{10}$/.test(formData.phoneNumber.replace(/\D/g, ''))) {
+      newErrors.phoneNumber = "Invalid phone number format"
+    }
+    if (!formData.department.trim()) newErrors.department = "Department is required"
+    if (!formData.employeeId.trim()) newErrors.employeeId = "Employee ID is required"
+
+    // File validations
+    if (!files.photo) newErrors.photo = "Profile photo is required"
+    if (!files.aadharFront) newErrors.aadharFront = "Aadhar front image is required"
+    if (!files.aadharBack) newErrors.aadharBack = "Aadhar back image is required"
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, fileType: 'photo' | 'aadharFront' | 'aadharBack') => {
-    const file = e.target.files?.[0] || null
+  // File upload handler
+  const handleFileChange = (field: keyof typeof files, file: File | null) => {
+    if (file) {
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: "File size must be less than 5MB"
+        }))
+        return
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({
+          ...prev,
+          [field]: "Only image files are allowed"
+        }))
+        return
+      }
+
+      // Clear previous error and set file
+      setErrors(prev => {
+        const newErrors = { ...prev }
+        delete newErrors[field]
+        return newErrors
+      })
+    }
+
     setFiles(prev => ({
       ...prev,
-      [fileType]: file
+      [field]: file
     }))
   }
 
-  const handleRegister = async (e: React.FormEvent) => {
+  // Form submission
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    // Validation
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
-      setError("Please fill in all required fields")
-      return
-    }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
-    }
-
-    if (!formData.agreeToTerms) {
-      setError("Please agree to the terms and conditions")
-      return
-    }
-
-    if (!files.photo || !files.aadharFront || !files.aadharBack) {
-      setError("Admin registration requires photo and Aadhar documents")
-      return
-    }
+    if (!validateForm()) return
 
     setLoading(true)
-    setError(null)
+    setErrors({})
+    setSuccess("")
 
     try {
-      const signupData = {
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        mobile: formData.phone,
+      // Create signup request
+      const signupData: SignupRequest = {
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         password: formData.password,
-        address: `${formData.department}, ${formData.city}, ${formData.pincode}`,
-        role: 'ROLE_ADMIN' as const,
-        isAdmin: true
+        mobile: formData.phoneNumber.trim(),
+        address: `${formData.department} - Government Office`,
+        role: "ROLE_ADMIN",
+        department: formData.department.trim(),
+        employeeId: formData.employeeId.trim(),
+        // In real implementation, these would be URLs after file upload
+        photoUrl: files.photo ? URL.createObjectURL(files.photo) : "",
+        aadharFrontUrl: files.aadharFront ? URL.createObjectURL(files.aadharFront) : "",
+        aadharBackUrl: files.aadharBack ? URL.createObjectURL(files.aadharBack) : ""
       }
 
-      const uploadFiles = {
-        ...(files.photo && { photo: files.photo }),
-        ...(files.aadharFront && { aadharFront: files.aadharFront }),
-        ...(files.aadharBack && { aadharBack: files.aadharBack })
-      }
+      const response = await authService.signup(signupData)
 
-      await authService.signup(signupData, uploadFiles)
-      
-      // Auto-login after successful signup
-      const loginResponse = await authService.login({
-        email: formData.email,
-        password: formData.password
+      setSuccess("Admin registration successful! Please wait for SuperAdmin verification.")
+
+      // Clear form
+      setFormData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        phoneNumber: "",
+        department: "",
+        employeeId: ""
       })
-      
-      setSuccess(true)
+      setFiles({
+        photo: null,
+        aadharFront: null,
+        aadharBack: null
+      })
+
+      // Redirect after success
       setTimeout(() => {
-        // Redirect to admin dashboard
-        router.push("/dashboard/admin")
-      }, 2000)
-    } catch (err: any) {
-      setError(err.message || "Registration failed. Please try again.")
-      console.error("Registration failed:", err)
+        router.push("/login")
+      }, 3000)
+
+    } catch (error: any) {
+      setErrors({
+        submit: error.response?.data?.message || "Registration failed. Please try again."
+      })
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
-      <div className="w-full max-w-md space-y-6">
-        {/* Language Switcher */}
-        <div className="flex justify-end">
-          <LanguageSwitcher />
-        </div>
-
-        {/* Back to Register Selection Link */}
-        <Link
-          href="/register"
-          className="inline-flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("register.backToOptions")}
-        </Link>
-
-        <Card className="shadow-xl border-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm">
-          <CardHeader className="space-y-4 text-center">
-            {/* Role Badge */}
-            <div className="mx-auto w-fit">
-              <div
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-white font-medium"
-                style={{ backgroundColor: "#27AE60" }}
-              >
-                <Shield className="h-4 w-4" />
-                {t("register.roles.admin.label")}
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-orange-900/20 flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl space-y-6">
+        {/* Header */}
+        <Card className="bg-gradient-to-r from-orange-600 to-red-600 text-white border-0">
+          <CardHeader className="text-center">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <Shield className="w-10 h-10" />
+              <CardTitle className="text-3xl font-bold">Admin Registration</CardTitle>
             </div>
-
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t("register.title")}
-            </CardTitle>
-            <p className="text-gray-600 dark:text-gray-400">
-              {t("register.roles.admin.desc")}
+            <div className="flex items-center justify-center">
+              <Badge className="bg-yellow-200 text-yellow-800 border-0">
+                Requires SuperAdmin Verification
+              </Badge>
+            </div>
+            <p className="text-orange-100 mt-2">
+              System administration with comprehensive verification
             </p>
           </CardHeader>
+        </Card>
 
-          <CardContent className="space-y-6">
-            {/* Success Message */}
-            {success && (
-              <div className="flex items-center gap-2 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">Registration successful! Redirecting to login...</span>
+        {/* Main Form */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield className="w-6 h-6 text-orange-600" />
+                <CardTitle>Admin Account Details</CardTitle>
               </div>
-            )}
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/register">
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Back
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
 
-            {/* Error Message */}
-            {error && (
-              <div className="flex items-center gap-2 p-3 rounded-md bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/20 dark:border-red-800 dark:text-red-400">
-                <AlertCircle className="h-4 w-4" />
-                <div className="text-sm">
-                  <p className="font-medium">Registration Failed</p>
-                  <p className="text-xs mt-1 opacity-90">{error}</p>
-                </div>
-              </div>
-            )}
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Success Message */}
+              {success && (
+                <Alert className="bg-green-50 border-green-200 text-green-800">
+                  <CheckCircle2 className="h-4 w-4" />
+                  <AlertDescription>{success}</AlertDescription>
+                </Alert>
+              )}
 
-            <form onSubmit={handleRegister} className="space-y-4">
-              {/* Personal Information Section */}
+              {/* Error Message */}
+              {errors.submit && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{errors.submit}</AlertDescription>
+                </Alert>
+              )}
+
+              {/* Personal Information */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                  {t("register.personalInfo")}
-                </h3>
-                
-                {/* First Name & Last Name */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.firstName")}
-                    </Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.lastName")}
-                    </Label>
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Phone */}
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("register.phone")}
-                  </Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="+91 98765 43210"
-                    required
-                  />
-                </div>
-              </div>
-
-              {/* Official Information Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                  Official Information
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Personal Information
                 </h3>
 
-                {/* Department & Employee ID */}
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="department" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.department")}
-                    </Label>
+                    <Label htmlFor="name">Full Name *</Label>
                     <Input
-                      id="department"
-                      name="department"
+                      id="name"
                       type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="Enter your full name"
+                      className={errors.name ? "border-red-500" : ""}
+                    />
+                    {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email Address *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                      placeholder="admin@example.com"
+                      className={errors.email ? "border-red-500" : ""}
+                    />
+                    {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      value={formData.phoneNumber}
+                      onChange={(e) => setFormData(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                      placeholder="10-digit phone number"
+                      className={errors.phoneNumber ? "border-red-500" : ""}
+                    />
+                    {errors.phoneNumber && <p className="text-sm text-red-600">{errors.phoneNumber}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="department">Department *</Label>
+                    <Select
                       value={formData.department}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      placeholder="Municipal Corporation, PWD, etc."
-                      required
-                    />
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, department: value }))}
+                    >
+                      <SelectTrigger className={errors.department ? "border-red-500" : ""}>
+                        <SelectValue placeholder="Select department" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="PWD">Public Works Department</SelectItem>
+                        <SelectItem value="MUNICIPAL">Municipal Corporation</SelectItem>
+                        <SelectItem value="WATER">Water Department</SelectItem>
+                        <SelectItem value="ELECTRICITY">Electricity Board</SelectItem>
+                        <SelectItem value="ROADS">Roads & Transport</SelectItem>
+                        <SelectItem value="SANITATION">Sanitation Department</SelectItem>
+                        <SelectItem value="PARKS">Parks & Recreation</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {errors.department && <p className="text-sm text-red-600">{errors.department}</p>}
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="employeeId" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.employeeId")}
-                    </Label>
+                    <Label htmlFor="employeeId">Employee ID *</Label>
                     <Input
                       id="employeeId"
-                      name="employeeId"
                       type="text"
                       value={formData.employeeId}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      placeholder="EMP123456"
-                      required
+                      onChange={(e) => setFormData(prev => ({ ...prev, employeeId: e.target.value }))}
+                      placeholder="Government employee ID"
+                      className={errors.employeeId ? "border-red-500" : ""}
                     />
+                    {errors.employeeId && <p className="text-sm text-red-600">{errors.employeeId}</p>}
                   </div>
                 </div>
               </div>
 
-              {/* Account Details Section */}
+              {/* Password Section */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                  {t("register.accountDetails")}
-                </h3>
+                <h3 className="text-lg font-semibold">Security</h3>
 
-                {/* Email */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t("register.email")}
-                  </Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                    placeholder="admin@municipality.gov"
-                    required
-                  />
-                </div>
-
-                {/* Password & Confirm Password */}
-                <div className="grid grid-cols-1 gap-4">
+                <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.password")}
-                    </Label>
+                    <Label htmlFor="password">Password *</Label>
                     <Input
                       id="password"
-                      name="password"
                       type="password"
                       value={formData.password}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
+                      onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                      placeholder="Minimum 8 characters"
+                      className={errors.password ? "border-red-500" : ""}
                     />
+                    {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
                   </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.confirmPassword")}
-                    </Label>
+                    <Label htmlFor="confirmPassword">Confirm Password *</Label>
                     <Input
                       id="confirmPassword"
-                      name="confirmPassword"
                       type="password"
                       value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
+                      onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                      placeholder="Re-enter password"
+                      className={errors.confirmPassword ? "border-red-500" : ""}
                     />
-                  </div>
-                </div>
-              </div>
-
-              {/* Jurisdiction Details Section */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                  Jurisdiction Details
-                </h3>
-
-                {/* City & PIN Code */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.city")}
-                    </Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      type="text"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      placeholder="Jurisdiction city"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="pincode" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("register.pincode")}
-                    </Label>
-                    <Input
-                      id="pincode"
-                      name="pincode"
-                      type="text"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      placeholder="400001"
-                      required
-                    />
+                    {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
                   </div>
                 </div>
               </div>
 
               {/* Document Upload Section */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-                  Required Documents
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <FileImage className="w-5 h-5" />
+                  Document Verification
                 </h3>
-                
-                {/* Photo Upload */}
-                <div className="space-y-2">
-                  <Label htmlFor="photo" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Profile Photo *
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="photo"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, 'photo')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
-                    />
-                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  </div>
-                  {files.photo && (
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      ✓ {files.photo.name}
-                    </p>
-                  )}
-                </div>
+                <p className="text-sm text-gray-600">
+                  Upload clear photos of required documents for verification
+                </p>
 
-                {/* Aadhar Front Upload */}
-                <div className="space-y-2">
-                  <Label htmlFor="aadharFront" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Aadhar Card (Front) *
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="aadharFront"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, 'aadharFront')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
-                    />
-                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <div className="grid md:grid-cols-3 gap-4">
+                  {/* Profile Photo */}
+                  <div className="space-y-2">
+                    <Label>Profile Photo *</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange('photo', e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="photo-upload"
+                      />
+                      <label htmlFor="photo-upload" className="cursor-pointer">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                          {files.photo ? files.photo.name : "Click to upload"}
+                        </p>
+                      </label>
+                    </div>
+                    {errors.photo && <p className="text-sm text-red-600">{errors.photo}</p>}
                   </div>
-                  {files.aadharFront && (
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      ✓ {files.aadharFront.name}
-                    </p>
-                  )}
-                </div>
 
-                {/* Aadhar Back Upload */}
-                <div className="space-y-2">
-                  <Label htmlFor="aadharBack" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Aadhar Card (Back) *
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="aadharBack"
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleFileChange(e, 'aadharBack')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 dark:bg-gray-800 dark:text-white"
-                      required
-                    />
-                    <Upload className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  {/* Aadhar Front */}
+                  <div className="space-y-2">
+                    <Label>Aadhar Card (Front) *</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange('aadharFront', e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="aadhar-front-upload"
+                      />
+                      <label htmlFor="aadhar-front-upload" className="cursor-pointer">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                          {files.aadharFront ? files.aadharFront.name : "Click to upload"}
+                        </p>
+                      </label>
+                    </div>
+                    {errors.aadharFront && <p className="text-sm text-red-600">{errors.aadharFront}</p>}
                   </div>
-                  {files.aadharBack && (
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      ✓ {files.aadharBack.name}
-                    </p>
-                  )}
+
+                  {/* Aadhar Back */}
+                  <div className="space-y-2">
+                    <Label>Aadhar Card (Back) *</Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-orange-400 transition-colors">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleFileChange('aadharBack', e.target.files?.[0] || null)}
+                        className="hidden"
+                        id="aadhar-back-upload"
+                      />
+                      <label htmlFor="aadhar-back-upload" className="cursor-pointer">
+                        <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                          {files.aadharBack ? files.aadharBack.name : "Click to upload"}
+                        </p>
+                      </label>
+                    </div>
+                    {errors.aadharBack && <p className="text-sm text-red-600">{errors.aadharBack}</p>}
+                  </div>
                 </div>
               </div>
 
-              {/* Terms and Conditions */}
-              <div className="flex items-start space-x-2">
-                <Checkbox
-                  id="terms"
-                  checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => 
-                    setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
-                  }
-                  className="mt-1"
-                  required
-                />
-                <Label 
-                  htmlFor="terms" 
-                  className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
-                >
-                  {t("register.terms")}
-                </Label>
-              </div>
+              {/* Verification Process Info */}
+              <Card className="bg-orange-50 border-orange-200">
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <UserCheck className="w-5 h-5 text-orange-600 mt-0.5" />
+                    <div>
+                      <h4 className="font-semibold text-orange-800 mb-1">Verification Process</h4>
+                      <p className="text-sm text-orange-700">
+                        After registration, your application will be reviewed by a SuperAdmin.
+                        You'll receive email notification once verified. Ensure all documents are clear and valid.
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* Submit Button */}
               <Button
                 type="submit"
-                className="w-full py-3 px-4 rounded-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                style={{ backgroundColor: "#27AE60" }}
-                disabled={!formData.agreeToTerms || loading || !files.photo || !files.aadharFront || !files.aadharBack}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white"
+                disabled={loading}
               >
                 {loading ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                     Registering...
-                  </div>
+                  </>
                 ) : (
-                  t("register.signup", { role: t("register.roles.admin.label") })
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Register as Admin
+                  </>
                 )}
               </Button>
             </form>
-
-            {/* Sign In Link */}
-            <div className="text-center pt-6 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t("register.haveAccount")}{" "}
-                <Link
-                  href="/login/admin"
-                  className="text-green-600 hover:text-green-500 dark:text-green-400 font-medium"
-                >
-                  {t("register.signin")}
-                </Link>
-              </p>
-            </div>
           </CardContent>
         </Card>
+
+
       </div>
     </div>
   )
