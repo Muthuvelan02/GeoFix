@@ -208,7 +208,10 @@
     "communityMember": "Community Member",
     "activeCities": "Active in 50+ cities",
     "buildingBetter": "Building better communities together",
-    "activeUsers": "Active Users"
+    "activeUsers": "Active Users",
+    "back": "Back",
+    "save": "Save",
+    "saving": "Saving..."
   },
   "testimonials": {
     "sarahQuote": "I reported a broken streetlight near my child's school. It was fixed within 3 days! Now kids can walk safely in the evening.",

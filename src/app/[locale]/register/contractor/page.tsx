@@ -16,7 +16,7 @@ import { authService } from "@/services/authService"
 export default function ContractorRegisterPage() {
   const t = useTranslations()
   const router = useRouter()
-  
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -47,7 +47,7 @@ export default function ContractorRegisterPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validation
     if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone || !formData.password) {
       setError("Please fill in all required fields")
@@ -78,18 +78,9 @@ export default function ContractorRegisterPage() {
       }
 
       await authService.signup(signupData)
-      
-      // Auto-login after successful signup
-      const loginResponse = await authService.login({
-        email: formData.email,
-        password: formData.password
-      })
-      
+
       setSuccess(true)
-      setTimeout(() => {
-        // Redirect to contractor dashboard
-        router.push("/dashboard/contractor")
-      }, 2000)
+      // Don't auto-login, show approval message instead
     } catch (err: any) {
       setError(err.message || "Registration failed. Please try again.")
       console.error("Registration failed:", err)
@@ -139,9 +130,12 @@ export default function ContractorRegisterPage() {
           <CardContent className="space-y-6">
             {/* Success Message */}
             {success && (
-              <div className="flex items-center gap-2 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">Registration successful! Redirecting to login...</span>
+              <div className="flex items-center gap-2 p-4 rounded-md bg-green-50 border border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
+                <CheckCircle className="h-5 w-5" />
+                <div className="text-sm">
+                  <p className="font-medium">Registration Successful!</p>
+                  <p className="mt-1">Your contractor account has been created and is pending admin approval. You will receive an email notification once your account is verified.</p>
+                </div>
               </div>
             )}
 
@@ -162,7 +156,7 @@ export default function ContractorRegisterPage() {
                 <h3 className="text-sm font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
                   {t("register.personalInfo")}
                 </h3>
-                
+
                 {/* First Name & Last Name */}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -389,14 +383,14 @@ export default function ContractorRegisterPage() {
                 <Checkbox
                   id="terms"
                   checked={formData.agreeToTerms}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setFormData(prev => ({ ...prev, agreeToTerms: checked as boolean }))
                   }
                   className="mt-1"
                   required
                 />
-                <Label 
-                  htmlFor="terms" 
+                <Label
+                  htmlFor="terms"
                   className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
                 >
                   {t("register.terms")}

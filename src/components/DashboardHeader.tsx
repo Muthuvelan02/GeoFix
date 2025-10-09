@@ -110,7 +110,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src="/placeholder-avatar.jpg" alt={userName} />
+                                    <AvatarImage src="/placeholder-avatar.svg" alt={userName} />
                                     <AvatarFallback>
                                         {userName.split(' ').map(n => n[0]).join('')}
                                     </AvatarFallback>

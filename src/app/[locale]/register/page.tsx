@@ -12,21 +12,14 @@ export default function RegisterPage() {
   const t = useTranslations()
 
   const roles = [
+
     {
-      id: "superadmin",
-      label: "SuperAdmin",
-      description: "Complete system control and administration",
-      color: "#DC2626", // red-600
-      icon: Shield,
-      href: "/register/superadmin"
-    },
-    {
-      id: "admin",
-      label: "Admin",
-      description: "System administration and contractor management",
-      color: "#EA580C", // orange-600
-      icon: Shield,
-      href: "/register/admin"
+      id: "citizen",
+      label: "Citizen",
+      description: "Report civic issues and track resolution progress",
+      color: "#0078D7", // blue
+      icon: Users,
+      href: "/register/citizen"
     },
     {
       id: "contractor",
@@ -35,14 +28,6 @@ export default function RegisterPage() {
       color: "#F59E0B", // amber-500
       icon: HardHat,
       href: "/register/contractor"
-    },
-    {
-      id: "citizen",
-      label: "Citizen",
-      description: "Report civic issues and track resolution progress",
-      color: "#0078D7", // blue
-      icon: Users,
-      href: "/register/citizen"
     }
   ]
 

@@ -55,11 +55,11 @@ export default function TicketManagementPage() {
 
             const [ticketsData, contractorsData] = await Promise.all([
                 adminService.getAllTickets(),
-                adminService.getAllContractors()
+                adminService.getActiveContractors() // Use getActiveContractors instead
             ])
 
             setTickets(ticketsData)
-            setContractors(contractorsData.filter((c: any) => c.status === 'ACTIVE'))
+            setContractors(contractorsData) // No need to filter since getActiveContractors returns only active ones
         } catch (err: any) {
             console.error('Error loading data:', err)
             setError(err.message || 'Failed to load data')

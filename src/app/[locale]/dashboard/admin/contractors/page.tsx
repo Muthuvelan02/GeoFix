@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogFooter,
@@ -51,9 +52,13 @@ export default function ContractorManagementPage() {
         try {
             setLoading(true)
             setError(null)
-            const data = await adminService.getPendingContractors()
+            console.log('🔄 Loading contractors in admin dashboard...')
+            const data = await adminService.getAllContractors()
+            console.log('📊 Contractors loaded:', data)
+            console.log('📊 Number of contractors:', data.length)
             setContractors(data)
         } catch (err: any) {
+            console.error('❌ Error loading contractors:', err)
             setError(err.message || "Failed to load contractors")
         } finally {
             setLoading(false)
@@ -66,7 +71,8 @@ export default function ContractorManagementPage() {
             const matchSearch =
                 c.name.toLowerCase().includes(search.toLowerCase()) ||
                 c.email.toLowerCase().includes(search.toLowerCase())
-            const matchStatus = statusFilter === "ALL" ? true : c.status === statusFilter
+            const matchStatus = statusFilter === "ALL" ? true :
+                (statusFilter === "ACTIVE" ? (c.status === "ACTIVE" || c.status === "VERIFIED") : c.status === statusFilter)
             return matchTab && matchSearch && matchStatus
         })
     }, [contractors, tab, search, statusFilter])
@@ -74,18 +80,19 @@ export default function ContractorManagementPage() {
     // Stats
     const totalCount = contractors.length
     const pendingCount = contractors.filter((c) => c.status === "PENDING").length
-    const activeCount = contractors.filter((c) => c.status === "ACTIVE").length
+    const activeCount = contractors.filter((c) => c.status === "ACTIVE" || c.status === "VERIFIED").length
 
     const getStatusBadge = (status: Contractor["status"]) => {
         switch (status) {
             case "PENDING":
                 return <Badge className="bg-yellow-100 text-yellow-800">Pending</Badge>
             case "ACTIVE":
+            case "VERIFIED":
                 return <Badge className="bg-green-100 text-green-800">Active</Badge>
             case "REJECTED":
                 return <Badge className="bg-red-100 text-red-800">Rejected</Badge>
             default:
-                return null
+                return <Badge className="bg-gray-100 text-gray-800">{status}</Badge>
         }
     }
 
@@ -100,15 +107,33 @@ export default function ContractorManagementPage() {
 
         try {
             setActionLoading(true)
+            console.log(`Attempting to ${selectedAction} contractor ${selectedContractor.id}`)
+
             if (selectedAction === "VERIFY") {
                 await adminService.verifyContractor(selectedContractor.id)
+                console.log('Contractor verification successful, updating local state')
+                // Update the contractor status in the local state
+                // Backend sets status to ACTIVE when verified, so we map it to VERIFIED for UI consistency
+                setContractors(prev => prev.map(contractor =>
+                    contractor.id === selectedContractor.id
+                        ? { ...contractor, status: 'ACTIVE' }
+                        : contractor
+                ))
             } else {
                 await adminService.rejectContractor(selectedContractor.id, 'Rejected by admin')
+                console.log('Contractor rejection successful, updating local state')
+                // Update the contractor status in the local state
+                setContractors(prev => prev.map(contractor =>
+                    contractor.id === selectedContractor.id
+                        ? { ...contractor, status: 'REJECTED' }
+                        : contractor
+                ))
             }
             setDialogOpen(false)
-            // Reload contractors to get updated data
-            await loadContractors()
+            console.log('Contractor status updated successfully')
         } catch (err: any) {
+            console.error('Error updating contractor status:', err)
+            console.error('Error details:', err.response?.data)
             alert(err.message || "Failed to update contractor status")
         } finally {
             setActionLoading(false)
@@ -123,9 +148,37 @@ export default function ContractorManagementPage() {
                 <div className="p-4 sm:p-6 lg:p-8">
                     <div className="space-y-8">
                         {/* Page Title */}
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                            Contractor Management
-                        </h1>
+                        <div className="flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                                Contractor Management
+                            </h1>
+                            <div className="flex gap-2">
+                                <Button
+                                    onClick={loadContractors}
+                                    disabled={loading}
+                                    variant="outline"
+                                    className="cursor-pointer"
+                                >
+                                    {loading ? "Loading..." : "Refresh"}
+                                </Button>
+                                <Button
+                                    onClick={() => {
+                                        console.log('🔍 DEBUG: Current contractors state:', contractors);
+                                        console.log('🔍 DEBUG: Looking for jv@cont.com...');
+                                        const targetContractor = contractors.find(c => c.email === 'jv@cont.com');
+                                        if (targetContractor) {
+                                            console.log('✅ Found jv@cont.com:', targetContractor);
+                                        } else {
+                                            console.log('❌ jv@cont.com not found in current state');
+                                        }
+                                    }}
+                                    variant="outline"
+                                    className="cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100"
+                                >
+                                    Debug
+                                </Button>
+                            </div>
+                        </div>
 
                         {/* Error Alert */}
                         {error && (
@@ -245,6 +298,16 @@ export default function ContractorManagementPage() {
                                                             </Button>
                                                         </div>
                                                     )}
+                                                    {(contractor.status === "ACTIVE" || contractor.status === "VERIFIED") && (
+                                                        <div className="pt-2">
+                                                            <p className="text-sm text-green-600 font-medium">✓ Verified and Active</p>
+                                                        </div>
+                                                    )}
+                                                    {contractor.status === "REJECTED" && (
+                                                        <div className="pt-2">
+                                                            <p className="text-sm text-red-600 font-medium">✗ Rejected</p>
+                                                        </div>
+                                                    )}
                                                 </CardContent>
                                             </Card>
                                         ))}
@@ -263,12 +326,16 @@ export default function ContractorManagementPage() {
                         <DialogTitle>
                             {selectedAction === "VERIFY" ? "Verify Contractor" : "Reject Contractor"}
                         </DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to{" "}
+                            {selectedAction === "VERIFY" ? "verify" : "reject"}{" "}
+                            <span className="font-semibold">{selectedContractor?.name}</span>?
+                            {selectedAction === "VERIFY"
+                                ? " This will approve their contractor account and allow them to access the platform."
+                                : " This will reject their contractor application and prevent them from accessing the platform."
+                            }
+                        </DialogDescription>
                     </DialogHeader>
-                    <p className="text-gray-600">
-                        Are you sure you want to{" "}
-                        {selectedAction === "VERIFY" ? "verify" : "reject"}{" "}
-                        <span className="font-semibold">{selectedContractor?.name}</span>?
-                    </p>
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setDialogOpen(false)} className="cursor-pointer">
                             Cancel

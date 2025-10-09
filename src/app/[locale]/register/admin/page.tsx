@@ -138,7 +138,11 @@ export default function AdminRegister() {
         aadharBackUrl: files.aadharBack ? URL.createObjectURL(files.aadharBack) : ""
       }
 
-      const response = await authService.signup(signupData)
+      const response = await authService.signup(signupData, {
+        photo: files.photo!,
+        aadharFront: files.aadharFront!,
+        aadharBack: files.aadharBack!
+      })
 
       setSuccess("Admin registration successful! Please wait for SuperAdmin verification.")
 

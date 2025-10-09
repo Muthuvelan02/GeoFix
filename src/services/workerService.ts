@@ -306,6 +306,46 @@ class WorkerService {
     const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:9050';
     return `${baseURL}/${photoPath}`;
   }
+
+  // ==================== ADDITIONAL MISSING ENDPOINTS ====================
+
+  /**
+   * Get tickets assigned to current worker (alternative endpoint)
+   */
+  async getAssignedTickets(): Promise<WorkerTask[]> {
+    try {
+      const response = await api.get<WorkerTask[]>('/api/tickets/assigned-to-me');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching assigned tickets:', error);
+      throw new Error(error.response?.data?.error || 'Failed to fetch assigned tickets');
+    }
+  }
+
+  /**
+   * Complete ticket with proof photo (alternative endpoint)
+   */
+  async completeTicketWithProof(ticketId: number, proofPhoto: File): Promise<WorkerTask> {
+    try {
+      const formData = new FormData();
+      formData.append('proofPhoto', proofPhoto);
+
+      const response = await api.post<{ message: string; ticket: WorkerTask }>(
+        `/api/tickets/${ticketId}/complete`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      );
+
+      return response.data.ticket;
+    } catch (error: any) {
+      console.error('Error completing ticket with proof:', error);
+      throw new Error(error.response?.data?.error || 'Failed to complete ticket');
+    }
+  }
 }
 
 // Export singleton instance

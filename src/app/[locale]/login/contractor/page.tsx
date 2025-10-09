@@ -68,15 +68,24 @@ export default function ContractorLoginPage() {
         router.push("/dashboard/contractor")
       }, 1500)
     } catch (err: any) {
-      // Generic error message for security
-      if (err.message?.includes('Server error') || err.message?.includes('500')) {
-        setError("Invalid credentials. Please check your email and password.")
+      console.error("Login failed:", err)
+
+      // Show specific error messages for better user experience
+      if (
+        err.message?.includes('pending admin approval') ||
+        err.message?.includes('not approved yet') ||
+        err.message?.toLowerCase().includes('not active')
+      ) {
+        setError("Your contractor account is pending admin approval. Please wait for verification before logging in.")
+      } else if (err.message?.includes('Server error') || err.message?.includes('500')) {
+        setError("Service temporarily unavailable. Please try again later.")
       } else if (err.message?.includes('Cannot connect') || err.message?.includes('ECONNREFUSED')) {
         setError("Service temporarily unavailable. Please try again later.")
-      } else {
+      } else if (err.message?.includes('Invalid credentials')) {
         setError("Invalid credentials. Please check your email and password.")
+      } else {
+        setError(err.message || "Login failed. Please try again.")
       }
-      console.error("Login failed:", err)
     } finally {
       setLoading(false)
     }

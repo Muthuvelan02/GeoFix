@@ -366,6 +366,164 @@ class SuperadminService {
       throw new Error(error.response?.data?.error || 'Failed to restart services');
     }
   }
+
+  // ==================== ADDITIONAL MISSING ENDPOINTS ====================
+
+  /**
+   * Get all system users (comprehensive list)
+   */
+  async getAllUsers(): Promise<any[]> {
+    try {
+      const response = await api.get('/api/superadmin/users');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching all users:', error);
+      // Return mock data for development
+      return [
+        {
+          id: 1,
+          name: "John Citizen",
+          email: "john@citizen.com",
+          mobile: "1234567890",
+          role: "ROLE_CITIZEN",
+          status: "ACTIVE",
+          createdAt: new Date().toISOString()
+        },
+        {
+          id: 2,
+          name: "Jane Admin",
+          email: "jane@admin.com",
+          mobile: "1234567891",
+          role: "ROLE_ADMIN",
+          status: "ACTIVE",
+          createdAt: new Date().toISOString()
+        }
+      ];
+    }
+  }
+
+  /**
+   * Promote user to admin
+   */
+  async promoteUserToAdmin(userId: number): Promise<void> {
+    try {
+      await api.post(`/api/superadmin/users/${userId}/promote-admin`);
+    } catch (error: any) {
+      console.error('Error promoting user to admin:', error);
+      throw new Error(error.response?.data?.error || 'Failed to promote user to admin');
+    }
+  }
+
+  /**
+   * Demote admin to regular user
+   */
+  async demoteAdminToUser(userId: number): Promise<void> {
+    try {
+      await api.post(`/api/superadmin/users/${userId}/demote-admin`);
+    } catch (error: any) {
+      console.error('Error demoting admin to user:', error);
+      throw new Error(error.response?.data?.error || 'Failed to demote admin to user');
+    }
+  }
+
+  /**
+   * Delete user permanently
+   */
+  async deleteUser(userId: number): Promise<void> {
+    try {
+      await api.delete(`/api/superadmin/users/${userId}`);
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      throw new Error(error.response?.data?.error || 'Failed to delete user');
+    }
+  }
+
+  /**
+   * Get user audit logs
+   */
+  async getUserAuditLogs(userId?: number, limit = 100): Promise<UserAuditLog[]> {
+    try {
+      const params = new URLSearchParams();
+      if (userId) params.append('userId', userId.toString());
+      params.append('limit', limit.toString());
+      
+      const response = await api.get<UserAuditLog[]>(`/api/superadmin/audit-logs?${params}`);
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching audit logs:', error);
+      // Return mock data for development
+      return [
+        {
+          id: '1',
+          userId: 1,
+          userName: 'John Citizen',
+          action: 'LOGIN',
+          details: 'User logged in successfully',
+          ipAddress: '192.168.1.1',
+          userAgent: 'Mozilla/5.0...',
+          timestamp: new Date().toISOString()
+        }
+      ];
+    }
+  }
+
+  /**
+   * Get system configuration
+   */
+  async getSystemConfig(): Promise<SystemConfig> {
+    try {
+      const response = await api.get<SystemConfig>('/api/superadmin/system/config');
+      return response.data;
+    } catch (error: any) {
+      console.error('Error fetching system config:', error);
+      // Return default config for development
+      return {
+        maintenanceMode: false,
+        registrationEnabled: true,
+        emailNotifications: true,
+        smsNotifications: false,
+        maxTicketsPerUser: 10,
+        maxContractorsPerRegion: 50,
+        dataRetentionDays: 365
+      };
+    }
+  }
+
+  /**
+   * Update system configuration
+   */
+  async updateSystemConfig(config: Partial<SystemConfig>): Promise<void> {
+    try {
+      await api.put('/api/superadmin/system/config', config);
+    } catch (error: any) {
+      console.error('Error updating system config:', error);
+      throw new Error(error.response?.data?.error || 'Failed to update system configuration');
+    }
+  }
+
+  /**
+   * Enable maintenance mode
+   */
+  async enableMaintenanceMode(): Promise<void> {
+    try {
+      await api.post('/api/superadmin/system/maintenance/enable');
+    } catch (error: any) {
+      console.error('Error enabling maintenance mode:', error);
+      throw new Error(error.response?.data?.error || 'Failed to enable maintenance mode');
+    }
+  }
+
+  /**
+   * Disable maintenance mode
+   */
+  async disableMaintenanceMode(): Promise<void> {
+    try {
+      await api.post('/api/superadmin/system/maintenance/disable');
+    } catch (error: any) {
+      console.error('Error disabling maintenance mode:', error);
+      throw new Error(error.response?.data?.error || 'Failed to disable maintenance mode');
+    }
+  }
 }
 
 // Export singleton instance

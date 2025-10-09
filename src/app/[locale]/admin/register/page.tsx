@@ -33,6 +33,7 @@ export default function AdminRegister() {
         department: "",
         employeeId: ""
     })
+    const [files, setFiles] = useState<{ photo?: File; aadharFront?: File; aadharBack?: File }>({})
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -63,6 +64,9 @@ export default function AdminRegister() {
         const mobileRegex = /^[0-9]{10}$/
         if (!mobileRegex.test(formData.mobile)) return "Mobile number must be 10 digits"
 
+        if (!files.photo) return "Photo is required"
+        if (!files.aadharFront) return "Aadhar front is required"
+        if (!files.aadharBack) return "Aadhar back is required"
         return null
     }
 
@@ -92,7 +96,7 @@ export default function AdminRegister() {
                 employeeId: formData.employeeId.trim()
             }
 
-            await authService.registerAdmin(registerData)
+            await authService.registerAdmin(registerData, files)
 
             setSuccess("Admin account created successfully! Please wait for approval from superadmin.")
 
@@ -188,6 +192,55 @@ export default function AdminRegister() {
                                         placeholder="admin@geofix.com"
                                         value={formData.email}
                                         onChange={handleInputChange}
+                                        disabled={loading}
+                                        className="border-gray-300 focus:border-red-500"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Required Documents */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="photo">Photo *</Label>
+                                    <Input
+                                        id="photo"
+                                        name="photo"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = (e.target as HTMLInputElement).files?.[0]
+                                            setFiles(prev => ({ ...prev, photo: file }))
+                                        }}
+                                        disabled={loading}
+                                        className="border-gray-300 focus:border-red-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="aadharFront">Aadhar Front *</Label>
+                                    <Input
+                                        id="aadharFront"
+                                        name="aadharFront"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = (e.target as HTMLInputElement).files?.[0]
+                                            setFiles(prev => ({ ...prev, aadharFront: file }))
+                                        }}
+                                        disabled={loading}
+                                        className="border-gray-300 focus:border-red-500"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="aadharBack">Aadhar Back *</Label>
+                                    <Input
+                                        id="aadharBack"
+                                        name="aadharBack"
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) => {
+                                            const file = (e.target as HTMLInputElement).files?.[0]
+                                            setFiles(prev => ({ ...prev, aadharBack: file }))
+                                        }}
                                         disabled={loading}
                                         className="border-gray-300 focus:border-red-500"
                                     />

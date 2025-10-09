@@ -184,6 +184,77 @@ class TicketService {
     // Otherwise, construct the URL with the backend base URL
     return `http://localhost:9050${photoPath}`;
   }
+
+  // Get tickets assigned to current worker
+  async getAssignedTickets(): Promise<Ticket[]> {
+    try {
+      const response = await api.get<Ticket[]>('/api/tickets/assigned-to-me');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get assigned tickets error:', error);
+      throw new Error(error.response?.data?.error || 'Failed to fetch assigned tickets');
+    }
+  }
+
+  // Get tickets assigned to current contractor
+  async getContractorTickets(): Promise<Ticket[]> {
+    try {
+      const response = await api.get<Ticket[]>('/api/tickets/contractor-tickets');
+      return response.data;
+    } catch (error: any) {
+      console.error('Get contractor tickets error:', error);
+      throw new Error(error.response?.data?.error || 'Failed to fetch contractor tickets');
+    }
+  }
+
+  // Complete ticket with proof photo
+  async completeTicket(ticketId: number, proofPhoto: File): Promise<Ticket> {
+    try {
+      const formData = new FormData();
+      formData.append('proofPhoto', proofPhoto);
+
+      const response = await api.post<{ message: string; ticket: Ticket }>(
+        `/api/tickets/${ticketId}/complete`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          }
+        }
+      );
+
+      return response.data.ticket;
+    } catch (error: any) {
+      console.error('Complete ticket error:', error);
+      throw new Error(error.response?.data?.error || 'Failed to complete ticket');
+    }
+  }
+
+  // Assign ticket to contractor
+  async assignToContractor(ticketId: number, contractorId: number): Promise<Ticket> {
+    try {
+      const response = await api.put<{ message: string; ticket: Ticket }>(
+        `/api/tickets/${ticketId}/assign-contractor/${contractorId}`
+      );
+      return response.data.ticket;
+    } catch (error: any) {
+      console.error('Assign to contractor error:', error);
+      throw new Error(error.response?.data?.error || 'Failed to assign ticket to contractor');
+    }
+  }
+
+  // Assign ticket to worker
+  async assignToWorker(ticketId: number, workerId: number): Promise<Ticket> {
+    try {
+      const response = await api.put<{ message: string; ticket: Ticket }>(
+        `/api/tickets/${ticketId}/assign-worker/${workerId}`
+      );
+      return response.data.ticket;
+    } catch (error: any) {
+      console.error('Assign to worker error:', error);
+      throw new Error(error.response?.data?.error || 'Failed to assign ticket to worker');
+    }
+  }
 }
 
 export const ticketService = new TicketService();

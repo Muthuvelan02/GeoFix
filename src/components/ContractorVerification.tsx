@@ -42,8 +42,13 @@ export default function ContractorVerification() {
                 await adminService.rejectContractor(contractorId)
             }
 
-            // Remove the contractor from the pending list
-            setPendingContractors(prev => prev.filter(contractor => contractor.id !== contractorId))
+            // Update the contractor status instead of removing them
+            // Backend sets status to ACTIVE when verified, so we map it accordingly
+            setPendingContractors(prev => prev.map(contractor =>
+                contractor.id === contractorId
+                    ? { ...contractor, status: approve ? 'ACTIVE' : 'REJECTED' }
+                    : contractor
+            ))
 
             // Show success message (you can implement a toast system)
             console.log(`Contractor ${approve ? 'approved' : 'rejected'} successfully`)

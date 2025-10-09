@@ -101,14 +101,29 @@ class AuthService {
       console.error('Error response:', error.response?.data);
       console.error('Error status:', error.response?.status);
       
-      if (error.response?.data?.error) {
-        throw new Error(error.response.data.error);
-      } else if (error.response?.data?.message) {
-        throw new Error(error.response.data.message);
+      // Prefer backend message if present
+      const backendMessage: string | undefined = error.response?.data?.message || error.response?.data?.error;
+      if (backendMessage) {
+        const msgLower = backendMessage.toLowerCase();
+        if (
+          msgLower.includes('not active') ||
+          msgLower.includes('pending') ||
+          msgLower.includes('approval') ||
+          msgLower.includes('verify') ||
+          msgLower.includes('verification')
+        ) {
+          throw new Error('Your contractor account is pending admin approval. Please wait for verification before logging in.');
+        }
+        throw new Error(backendMessage);
+      } else if (error.response?.status === 401) {
+        throw new Error('Invalid credentials. Please check your email and password.');
+      } else if (error.response?.status === 403) {
+        throw new Error('Your account is not approved yet. Please wait for admin verification.');
       } else if (error.response?.status === 404) {
         throw new Error('API endpoint not found. Please check if the backend is running.');
       } else if (error.response?.status === 500) {
-        throw new Error('Server error. Please try again later.');
+        // Some controllers throw 500 with message 'Account is not active'
+        throw new Error('Your contractor account is pending admin approval. Please wait for verification before logging in.');
       } else if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
         throw new Error('Cannot connect to server. Please check if the backend is running on http://localhost:9050');
       } else {
@@ -224,7 +239,7 @@ class AuthService {
     return localStorage.getItem('authToken');
   }
 
-  // Register admin with special admin code
+  // Register admin (multipart to /auth/signup, as backend validates docs by role)
   async registerAdmin(adminData: {
     name: string;
     email: string;
@@ -236,6 +251,10 @@ class AuthService {
     adminCode: string;
     department: string;
     employeeId: string;
+  }, files?: {
+    photo?: File;
+    aadharFront?: File;
+    aadharBack?: File;
   }): Promise<SignupResponse> {
     try {
       console.log('Admin registration attempt with:', { 
@@ -244,7 +263,25 @@ class AuthService {
         department: adminData.department 
       });
       
-      const response = await api.post<SignupResponse>('/auth/register-admin', adminData);
+      // Use FormData for file uploads toward /auth/signup
+      const formData = new FormData();
+      formData.append('userData', JSON.stringify(adminData));
+      
+      if (files?.photo) {
+        formData.append('photo', files.photo);
+      }
+      if (files?.aadharFront) {
+        formData.append('aadharFront', files.aadharFront);
+      }
+      if (files?.aadharBack) {
+        formData.append('aadharBack', files.aadharBack);
+      }
+      
+      const response = await api.post<SignupResponse>('/auth/signup', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
       return response.data;
     } catch (error: any) {
       console.error('Admin registration error:', error);
@@ -280,6 +317,10 @@ class AuthService {
     designation: string;
     employeeId: string;
     securityQuestions: Array<{ question: string; answer: string }>;
+  }, files?: {
+    photo?: File;
+    aadharFront?: File;
+    aadharBack?: File;
   }): Promise<SignupResponse> {
     try {
       console.log('Superadmin registration attempt with:', { 
@@ -288,7 +329,25 @@ class AuthService {
         organization: superadminData.organization 
       });
       
-      const response = await api.post<SignupResponse>('/auth/register-superadmin', superadminData);
+      // Use FormData for file uploads
+      const formData = new FormData();
+      formData.append('userData', JSON.stringify(superadminData));
+      
+      if (files?.photo) {
+        formData.append('photo', files.photo);
+      }
+      if (files?.aadharFront) {
+        formData.append('aadharFront', files.aadharFront);
+      }
+      if (files?.aadharBack) {
+        formData.append('aadharBack', files.aadharBack);
+      }
+      
+      const response = await api.post<SignupResponse>('/auth/register-superadmin', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
       return response.data;
     } catch (error: any) {
       console.error('Superadmin registration error:', error);
@@ -321,10 +380,31 @@ class AuthService {
     }
   }
 
-  // Update user profile
-  async updateProfile(profileData: any): Promise<any> {
+  // Update user profile with file uploads
+  async updateProfile(profileData: any, files?: {
+    photo?: File;
+    aadharFront?: File;
+    aadharBack?: File;
+  }): Promise<any> {
     try {
-      const response = await api.put('/auth/profile', profileData);
+      const formData = new FormData();
+      formData.append('userData', JSON.stringify(profileData));
+      
+      if (files?.photo) {
+        formData.append('photo', files.photo);
+      }
+      if (files?.aadharFront) {
+        formData.append('aadharFront', files.aadharFront);
+      }
+      if (files?.aadharBack) {
+        formData.append('aadharBack', files.aadharBack);
+      }
+
+      const response = await api.put('/auth/update-profile', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        }
+      });
       return response.data;
     } catch (error: any) {
       console.error('Update profile error:', error);
