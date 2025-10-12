@@ -60,28 +60,16 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching pending admins:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          name: "John Admin",
-          email: "john@geofix.com",
-          mobile: "1234567890",
-          department: "Public Works",
-          employeeId: "EMP001",
-          createdAt: new Date().toISOString(),
-          status: "PENDING"
-        }
-      ];
+      throw new Error(error.response?.data?.error || 'Failed to fetch pending admins');
     }
   }
 
   /**
    * Verify admin (Phase 2)
    */
-  async verifyAdmin(adminId: number): Promise<void> {
+  async verifyAdmin(adminId: number, status: 'VERIFIED' | 'REJECTED' = 'VERIFIED'): Promise<void> {
     try {
-      await api.put(`/api/superadmin/admins/${adminId}/verify`);
+      await api.put(`/api/superadmin/admins/${adminId}/verify`, { status });
     } catch (error: any) {
       console.error('Error verifying admin:', error);
       throw new Error(error.response?.data?.error || 'Failed to verify admin');
@@ -97,22 +85,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching superadmin stats:', error);
-      
-      // Return mock data for development
-      return {
-        totalUsers: 1250,
-        totalAdmins: 15,
-        totalTickets: 3480,
-        totalContractors: 85,
-        systemUptime: '99.9%',
-        databaseSize: '2.4 GB',
-        activeUsers: 124,
-        systemLoad: 45,
-        criticalAlerts: 2,
-        pendingApprovals: 8,
-        systemHealth: 'Good',
-        activeConnections: 67
-      };
+      throw new Error(error.response?.data?.error || 'Superadmin dashboard endpoint not available');
     }
   }
 
@@ -195,17 +168,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching system config:', error);
-      
-      // Return default config for development
-      return {
-        maintenanceMode: false,
-        registrationEnabled: true,
-        emailNotifications: true,
-        smsNotifications: false,
-        maxTicketsPerUser: 10,
-        maxContractorsPerRegion: 50,
-        dataRetentionDays: 365
-      };
+      throw new Error(error.response?.data?.error || 'Superadmin system config endpoint not available');
     }
   }
 
@@ -256,26 +219,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching backups:', error);
-      
-      // Return mock data for development
-      return [
-        {
-          id: '1',
-          name: 'Full Backup - ' + new Date().toLocaleDateString(),
-          size: '1.2 GB',
-          createdAt: new Date().toISOString(),
-          status: 'completed',
-          type: 'full'
-        },
-        {
-          id: '2',
-          name: 'Incremental Backup - ' + new Date(Date.now() - 86400000).toLocaleDateString(),
-          size: '245 MB',
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          status: 'completed',
-          type: 'incremental'
-        }
-      ];
+      throw new Error(error.response?.data?.error || 'Failed to fetch backups');
     }
   }
 
@@ -378,27 +322,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching all users:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          name: "John Citizen",
-          email: "john@citizen.com",
-          mobile: "1234567890",
-          role: "ROLE_CITIZEN",
-          status: "ACTIVE",
-          createdAt: new Date().toISOString()
-        },
-        {
-          id: 2,
-          name: "Jane Admin",
-          email: "jane@admin.com",
-          mobile: "1234567891",
-          role: "ROLE_ADMIN",
-          status: "ACTIVE",
-          createdAt: new Date().toISOString()
-        }
-      ];
+      throw new Error(error.response?.data?.error || 'Failed to fetch all users');
     }
   }
 
@@ -451,19 +375,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching audit logs:', error);
-      // Return mock data for development
-      return [
-        {
-          id: '1',
-          userId: 1,
-          userName: 'John Citizen',
-          action: 'LOGIN',
-          details: 'User logged in successfully',
-          ipAddress: '192.168.1.1',
-          userAgent: 'Mozilla/5.0...',
-          timestamp: new Date().toISOString()
-        }
-      ];
+      throw new Error(error.response?.data?.error || 'Failed to fetch audit logs');
     }
   }
 
@@ -476,16 +388,7 @@ class SuperadminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching system config:', error);
-      // Return default config for development
-      return {
-        maintenanceMode: false,
-        registrationEnabled: true,
-        emailNotifications: true,
-        smsNotifications: false,
-        maxTicketsPerUser: 10,
-        maxContractorsPerRegion: 50,
-        dataRetentionDays: 365
-      };
+      throw new Error(error.response?.data?.error || 'Failed to fetch system config');
     }
   }
 

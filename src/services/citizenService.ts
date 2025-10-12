@@ -214,3 +214,6 @@ class CitizenService {
 // Export singleton instance
 const citizenService = new CitizenService();
 export default citizenService;
+
+
+

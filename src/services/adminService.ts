@@ -1,4 +1,5 @@
 import api from '@/lib/axios';
+import { Ticket } from '@/types';
 
 // ==================== TYPES ====================
 
@@ -172,18 +173,7 @@ class AdminService {
       return [...uniqueCitizens, ...contractors];
     } catch (error: any) {
       console.error('Error fetching all users:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          name: "John Doe",
-          email: "john@example.com",
-          mobile: "9876543210",
-          role: ['ROLE_CITIZEN'],
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString()
-        }
-      ];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch users');
     }
   }
 
@@ -196,23 +186,7 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching all tickets:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          title: "Pothole on Main Street",
-          description: "Large pothole causing traffic issues",
-          location: "Main Street, Downtown",
-          status: 'PENDING',
-          citizen: {
-            id: 1,
-            name: "John Citizen",
-            email: "john@citizen.com",
-            mobile: "9876543210"
-          },
-          createdAt: new Date().toISOString()
-        }
-      ];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch tickets');
     }
   }
 
@@ -241,26 +215,7 @@ class AdminService {
         console.warn('⚠️ Response data is not an array:', response.data);
         return [];
       }
-      
-      // If no contractors found, add the test contractor that's trying to log in
-      if (response.data.length === 0) {
-        console.log('📝 No contractors found in API, adding test contractor for debugging');
-        return [
-          {
-            id: 999,
-            name: "Test Contractor (jv@cont.com)",
-            email: "jv@cont.com",
-            mobile: "9876543210",
-            address: "123 Test Street",
-            status: 'PENDING',
-            roles: ['ROLE_CONTRACTOR'],
-            createdAt: new Date().toISOString(),
-            specialization: "General Construction",
-            description: "Test contractor for verification - this should be verified to allow login"
-          }
-        ];
-      }
-      
+
       // Check if jv@cont.com is in the response
       const targetContractor = response.data.find(c => c.email === 'jv@cont.com');
       if (targetContractor) {
@@ -273,79 +228,20 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('❌ Error fetching all contractors:', error);
-      console.error('Error status:', error.response?.status);
-      console.error('Error data:', error.response?.data);
-      console.error('Error message:', error.message);
-      
-      // Return mock data including the test contractor
-      console.log('📝 Returning mock data due to API error');
-      return [
-        {
-          id: 999,
-          name: "Test Contractor (jv@cont.com)",
-          email: "jv@cont.com",
-          mobile: "9876543210",
-          address: "123 Test Street",
-          status: 'PENDING',
-          roles: ['ROLE_CONTRACTOR'],
-          createdAt: new Date().toISOString(),
-          specialization: "General Construction",
-          description: "Test contractor for verification - this should be verified to allow login"
-        },
-        {
-          id: 1,
-          name: "ABC Construction",
-          email: "abc@construction.com",
-          mobile: "9876543210",
-          address: "123 Builder Street",
-          status: 'PENDING',
-          roles: ['ROLE_CONTRACTOR'],
-          createdAt: new Date().toISOString(),
-          specialization: "Road Construction",
-          description: "Experienced in road and infrastructure projects"
-        }
-      ];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch contractors');
     }
   }
 
   /**
    * Get active contractors only (for assignment)
-   * Since there's no backend endpoint for active contractors, we'll use mock data
-   * In a real implementation, this would need a backend endpoint
    */
   async getActiveContractors(): Promise<Contractor[]> {
     try {
-      // For now, return mock active contractors since there's no backend endpoint
-      // In a real implementation, this should call a backend endpoint like /api/admin/contractors/active
-      return [
-        {
-          id: 2,
-          name: "XYZ Builders",
-          email: "xyz@builders.com",
-          mobile: "9876543211",
-          address: "456 Construction Ave",
-          status: 'ACTIVE',
-          roles: ['ROLE_CONTRACTOR'],
-          createdAt: new Date().toISOString(),
-          specialization: "Building Construction",
-          description: "Specialized in residential and commercial buildings"
-        },
-        {
-          id: 3,
-          name: "Road Masters",
-          email: "road@masters.com",
-          mobile: "9876543212",
-          address: "789 Highway Road",
-          status: 'ACTIVE',
-          roles: ['ROLE_CONTRACTOR'],
-          createdAt: new Date().toISOString(),
-          specialization: "Road Construction",
-          description: "Expert in road and highway construction"
-        }
-      ];
+      const response = await api.get<Contractor[]>('/api/admin/contractors/active');
+      return Array.isArray(response.data) ? response.data : [];
     } catch (error: any) {
       console.error('Error fetching active contractors:', error);
-      return [];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch active contractors');
     }
   }
 
@@ -358,21 +254,7 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching pending contractors:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          name: "ABC Construction",
-          email: "abc@construction.com",
-          mobile: "9876543210",
-          address: "123 Builder Street",
-          status: 'PENDING',
-          roles: ['ROLE_CONTRACTOR'],
-          createdAt: new Date().toISOString(),
-          specialization: "Road Construction",
-          description: "Experienced in road and infrastructure projects"
-        }
-      ];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch pending contractors');
     }
   }
 
@@ -430,100 +312,19 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching all tickets:', error);
-      // Return mock data for development
-      return [
-        {
-          id: 1,
-          title: "Pothole on Main Street",
-          description: "Large pothole causing traffic issues",
-          location: "Main Street, Downtown",
-          status: 'PENDING',
-          citizen: {
-            id: 1,
-            name: "John Citizen",
-            email: "john@citizen.com",
-            mobile: "9876543210"
-          },
-          createdAt: new Date().toISOString()
-        }
-      ];
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch tickets');
     }
   }
 
-  /**
-   * Assign ticket to contractor (Phase 3)
-   */
-  async assignTicketToContractor(ticketId: number, contractorId: number): Promise<void> {
-    try {
-      await api.put(`/api/admin/tickets/${ticketId}/assign`, { contractorId });
-    } catch (error: any) {
-      console.error('Error assigning ticket to contractor:', error);
-      throw new Error(error.response?.data?.error || 'Failed to assign ticket');
-    }
-  }
+  // Removed duplicate assignTicketToContractor definition (use the one below)
 
   // ==================== PHASE 6: MONITORING ====================
 
-  /**
-   * Get admin dashboard (Phase 6)
-   */
-  async getAdminDashboard(): Promise<AdminDashboardData> {
-    try {
-      const response = await api.get<AdminDashboardData>('/api/admin/dashboard');
-      return response.data;
-    } catch (error: any) {
-      console.error('Error fetching admin dashboard:', error);
-      // Return mock data for development
-      return this.getAdminDashboardMockData();
-    }
-  }
+  // Removed getAdminDashboard; use getDashboardData/getDashboardStats aligned to backend
 
-  /**
-   * Generate reports (Phase 6)
-   */
-  async generateReports(reportType: 'tickets' | 'contractors' | 'system', dateRange?: { from: string; to: string }): Promise<any> {
-    try {
-      let dateRangeParam = '2025-01-01:2025-12-31';
-      if (dateRange) {
-        dateRangeParam = `${dateRange.from}:${dateRange.to}`;
-      }
-      const response = await api.get(`/api/admin/reports?dateRange=${dateRangeParam}`);
-      return response.data;
-    } catch (error: any) {
-      console.error('Error generating reports:', error);
-      throw new Error(error.response?.data?.error || 'Failed to generate reports');
-    }
-  }
+  // Removed duplicate generateReports definition (use the one below)
 
   // ==================== HELPER METHODS ====================
-
-  private getAdminDashboardMockData(): AdminDashboardData {
-    const stats: SystemStats = {
-      totalUsers: 156,
-      totalTickets: 47,
-      totalContractors: 8,
-      pendingTickets: 12,
-      completedTickets: 35,
-      activeContractors: 6,
-      pendingApprovals: 3,
-      systemHealth: 'Good',
-      recentActivity: [
-        {
-          id: '1',
-          type: 'ticket_created',
-          message: 'New ticket created in downtown area',
-          timestamp: new Date().toISOString()
-        }
-      ]
-    };
-
-    return {
-      stats,
-      recentTickets: [],
-      pendingApprovals: [],
-      systemAlerts: []
-    };
-  }
 
   /**
    * Get system statistics
@@ -589,14 +390,7 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching dashboard stats:', error);
-      // Return mock data for development
-      return {
-        pendingTickets: 12,
-        verifiedContractors: 8,
-        totalTickets: 47,
-        activeContractors: 6,
-        completedTickets: 35
-      };
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch dashboard stats');
     }
   }
 
@@ -641,16 +435,7 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error fetching reports:', error);
-      // Return mock data for development
-      return {
-        resolvedTickets: 35,
-        unresolvedTickets: 12,
-        dateRange: "2025-01-01:2025-12-31",
-        totalTickets: 47,
-        completedTickets: 35,
-        pendingTickets: 12,
-        inProgressTickets: 0
-      };
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch reports');
     }
   }
 
@@ -769,12 +554,7 @@ class AdminService {
       return response.data;
     } catch (error: any) {
       console.error('Error generating reports:', error);
-      // Return mock data for development
-      return {
-        resolvedTickets: 45,
-        unresolvedTickets: 12,
-        dateRange
-      };
+      throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to generate reports');
     }
   }
 }
