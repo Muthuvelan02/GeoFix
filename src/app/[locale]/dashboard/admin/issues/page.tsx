@@ -10,7 +10,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog"
 import {
@@ -39,7 +38,6 @@ export default function IssueAssignmentPage() {
     const [assignDialogOpen, setAssignDialogOpen] = useState(false)
     const [selectedTicket, setSelectedTicket] = useState<TicketForAdmin | null>(null)
     const [selectedContractor, setSelectedContractor] = useState<number | null>(null)
-    const [manualContractorId, setManualContractorId] = useState<string>("")
 
     // Load tickets and contractors from backend
     useEffect(() => {
@@ -104,13 +102,11 @@ export default function IssueAssignmentPage() {
     }
 
     const handleAssign = async () => {
-        if (!selectedTicket) return
-        const contractorIdToUse = selectedContractor ?? (manualContractorId ? Number(manualContractorId) : null)
-        if (!contractorIdToUse || Number.isNaN(contractorIdToUse)) return
+        if (!selectedTicket || !selectedContractor) return
 
         try {
             setActionLoading(true)
-            await adminService.assignTicketToContractor(selectedTicket.id, contractorIdToUse)
+            await adminService.assignTicketToContractor(selectedTicket.id, selectedContractor)
             setAssignDialogOpen(false)
             // Reload tickets to get updated data
             await loadData()
@@ -286,9 +282,6 @@ export default function IssueAssignmentPage() {
                 <DialogContent className="sm:max-w-[500px]">
                     <DialogHeader>
                         <DialogTitle>Assign Ticket to Contractor</DialogTitle>
-                        <DialogDescription>
-                            Select an ACTIVE contractor. If the list is empty, enter Contractor ID manually.
-                        </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         {selectedTicket && (
@@ -323,17 +316,6 @@ export default function IssueAssignmentPage() {
                                     )}
                                 </SelectContent>
                             </Select>
-                            {contractors.length === 0 && (
-                                <div className="pt-2">
-                                    <label className="text-sm font-medium mb-1 block">Enter Contractor ID</label>
-                                    <Input
-                                        type="number"
-                                        placeholder="Contractor ID"
-                                        value={manualContractorId}
-                                        onChange={(e) => setManualContractorId(e.target.value)}
-                                    />
-                                </div>
-                            )}
                         </div>
                     </div>
                     <DialogFooter className="flex gap-2">
@@ -343,7 +325,7 @@ export default function IssueAssignmentPage() {
                         <Button
                             className="bg-orange-600 hover:bg-orange-700 text-white cursor-pointer"
                             onClick={handleAssign}
-                            disabled={actionLoading || (!selectedContractor && !manualContractorId)}
+                            disabled={actionLoading || !selectedContractor || contractors.length === 0}
                         >
                             {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Assign"}
                         </Button>

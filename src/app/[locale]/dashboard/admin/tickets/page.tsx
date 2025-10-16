@@ -20,13 +20,17 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle, RefreshCw, X, MapPin, Calendar, User, Phone, Mail, Clock } from "lucide-react"
 import CollapsibleSidebar from "@/components/CollapsibleSidebar"
+import DashboardHeader from "@/components/DashboardHeader"
 import adminService, { TicketForAdmin, Contractor } from "@/services/adminService"
 import { authService } from "@/services/authService"
 import { Input } from "@/components/ui/input"
+import { useRealTimeData } from "@/hooks/useRealTimeData"
+import { useRouter } from "@/i18n/navigation"
 
 export default function TicketManagementPage() {
+    const router = useRouter()
     const [user, setUser] = useState<any>(null)
     const [tickets, setTickets] = useState<TicketForAdmin[]>([])
     const [contractors, setContractors] = useState<Contractor[]>([])
@@ -39,6 +43,14 @@ export default function TicketManagementPage() {
     const [assignDialogOpen, setAssignDialogOpen] = useState(false)
     const [selectedTicket, setSelectedTicket] = useState<TicketForAdmin | null>(null)
     const [selectedContractor, setSelectedContractor] = useState<number | null>(null)
+    const [ticketDetailOpen, setTicketDetailOpen] = useState(false)
+    const [viewingTicket, setViewingTicket] = useState<TicketForAdmin | null>(null)
+
+    // Real-time data hook (manual refresh only)
+    const { data: realTimeData, loading: realTimeLoading, refresh } = useRealTimeData({
+        pollingInterval: 10000, // Not used since enabled is false
+        enabled: false // Manual refresh only to save resources
+    })
 
     // Load tickets and contractors from backend
     useEffect(() => {
@@ -98,6 +110,11 @@ export default function TicketManagementPage() {
         setAssignDialogOpen(true)
     }
 
+    const openTicketDetail = (ticket: TicketForAdmin) => {
+        setViewingTicket(ticket)
+        setTicketDetailOpen(true)
+    }
+
     // Filter tickets based on search, status, and date
     const filteredTickets = useMemo(() => {
         return tickets.filter(ticket => {
@@ -132,8 +149,17 @@ export default function TicketManagementPage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+                <DashboardHeader
+                    userRole="admin"
+                    userName={user?.name || "Admin User"}
+                    userEmail={user?.email || "admin@example.com"}
+                    onLogout={() => {
+                        authService.logout()
+                        router.push("/login/admin")
+                    }}
+                />
                 <div className="flex">
-                    <CollapsibleSidebar userRole="admin" locale="en" />
+                    <CollapsibleSidebar userRole="admin" locale="en" user={user} />
                     <main className="flex-1 lg:ml-64 pt-16">
                         <div className="container mx-auto px-4 py-8">
                             <div className="flex items-center justify-center h-64">
@@ -149,14 +175,43 @@ export default function TicketManagementPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+            <DashboardHeader
+                userRole="admin"
+                userName={user?.name || "Admin User"}
+                userEmail={user?.email || "admin@example.com"}
+                onLogout={() => {
+                    authService.logout()
+                    router.push("/login/admin")
+                }}
+            />
             <div className="flex">
-                <CollapsibleSidebar userRole="admin" locale="en" />
+                <CollapsibleSidebar userRole="admin" locale="en" user={user} />
                 <main className="flex-1 lg:ml-64 pt-16">
                     <div className="container mx-auto px-4 py-8">
-                        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Ticket Management</h1>
-                        <p className="text-gray-600 dark:text-gray-300 mb-6">
-                            Manage and assign tickets to contractors
-                        </p>
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Ticket Management</h1>
+                                <p className="text-gray-600 dark:text-gray-300">
+                                    Manage and assign tickets to contractors
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <div className={`w-2 h-2 rounded-full ${realTimeLoading ? 'bg-yellow-500 animate-pulse' : 'bg-blue-500'}`} />
+                                    <span>{realTimeLoading ? 'Updating...' : 'Manual Refresh'}</span>
+                                </div>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={refresh}
+                                    disabled={realTimeLoading}
+                                    className="flex items-center gap-1"
+                                >
+                                    <RefreshCw className={`h-3 w-3 ${realTimeLoading ? 'animate-spin' : ''}`} />
+                                    Refresh
+                                </Button>
+                            </div>
+                        </div>
 
                         {error && (
                             <Alert className="mb-6">
@@ -262,11 +317,23 @@ export default function TicketManagementPage() {
                                 </Card>
                             ) : (
                                 filteredTickets.map((ticket) => (
-                                    <Card key={ticket.id}>
+                                    <Card
+                                        key={ticket.id}
+                                        className="cursor-pointer hover:shadow-md transition-shadow"
+                                        onClick={() => openTicketDetail(ticket)}
+                                    >
                                         <CardHeader>
                                             <div className="flex justify-between items-start">
                                                 <div>
-                                                    <CardTitle className="text-lg">{ticket.title}</CardTitle>
+                                                    <div className="flex items-center gap-2">
+                                                        <CardTitle className="text-lg">{ticket.title}</CardTitle>
+                                                        {realTimeData.tickets.some(rt => rt.id === ticket.id &&
+                                                            new Date(rt.createdAt) > new Date(Date.now() - 5 * 60 * 1000)) && (
+                                                                <Badge variant="default" className="bg-green-500 text-white">
+                                                                    NEW
+                                                                </Badge>
+                                                            )}
+                                                    </div>
                                                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                         Reported by: {ticket.citizen.name} ({ticket.citizen.email})
                                                     </p>
@@ -390,6 +457,117 @@ export default function TicketManagementPage() {
                             Assign
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Ticket Detail Modal */}
+            <Dialog open={ticketDetailOpen} onOpenChange={setTicketDetailOpen}>
+                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center justify-between">
+                            <span>Ticket #{viewingTicket?.id} - {viewingTicket?.title}</span>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setTicketDetailOpen(false)}
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        </DialogTitle>
+                        <DialogDescription>
+                            View detailed information about this ticket
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {viewingTicket && (
+                        <div className="space-y-6">
+                            {/* Ticket Status */}
+                            <div className="flex items-center justify-between">
+                                {getStatusBadge(viewingTicket.status)}
+                                <div className="text-sm text-gray-500">
+                                    Created: {new Date(viewingTicket.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <h4 className="font-medium mb-2">Description</h4>
+                                <p className="text-gray-700 dark:text-gray-300">
+                                    {viewingTicket.description}
+                                </p>
+                            </div>
+
+                            {/* Photos */}
+                            {viewingTicket.photos && viewingTicket.photos.length > 0 && (
+                                <div>
+                                    <h4 className="font-medium mb-2">Photos</h4>
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        {viewingTicket.photos.map((photo, index) => (
+                                            <img
+                                                key={index}
+                                                src={photo}
+                                                alt={`Ticket photo ${index + 1}`}
+                                                className="w-full h-32 object-cover rounded-lg border"
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Location and Date */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="flex items-center gap-2">
+                                    <MapPin className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        {viewingTicket.location}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-gray-500" />
+                                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                                        {new Date(viewingTicket.createdAt).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Citizen Info */}
+                            <div className="border-t pt-4">
+                                <h4 className="font-medium mb-3">Reporter Details</h4>
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-2">
+                                        <User className="h-4 w-4 text-gray-500" />
+                                        <span className="text-sm">{viewingTicket.citizen.name}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Mail className="h-4 w-4 text-gray-500" />
+                                        <span className="text-sm">{viewingTicket.citizen.email}</span>
+                                    </div>
+                                    {viewingTicket.citizen.mobile && (
+                                        <div className="flex items-center gap-2">
+                                            <Phone className="h-4 w-4 text-gray-500" />
+                                            <span className="text-sm">{viewingTicket.citizen.mobile}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Assignment Section */}
+                            {viewingTicket.status === 'PENDING' && (
+                                <div className="border-t pt-4">
+                                    <h4 className="font-medium mb-3">Assignment</h4>
+                                    <Button
+                                        onClick={() => {
+                                            setTicketDetailOpen(false)
+                                            openAssignDialog(viewingTicket)
+                                        }}
+                                        className="w-full"
+                                    >
+                                        Assign to Contractor
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </DialogContent>
             </Dialog>
         </div>

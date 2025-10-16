@@ -141,7 +141,16 @@ export default function ContractorDashboard() {
                 <meta name="description" content="Manage assigned tickets and coordinate with workers" />
             </Head>
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <DashboardHeader />
+                <DashboardHeader
+                    userRole="contractor"
+                    userName={user?.name || "Contractor"}
+                    userEmail={user?.email || "contractor@example.com"}
+                    notificationCount={0}
+                    onLogout={() => {
+                        authService.logout()
+                        router.push("/login/contractor")
+                    }}
+                />
                 <div className="flex">
                     <CollapsibleSidebar userRole="contractor" locale={locale} user={user} />
 

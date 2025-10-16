@@ -143,9 +143,18 @@ export default function WorkerTasksPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <DashboardHeader />
+            <DashboardHeader
+                userRole="worker"
+                userName={user?.name || "Worker"}
+                userEmail={user?.email || "worker@example.com"}
+                notificationCount={0}
+                onLogout={() => {
+                    authService.logout()
+                    router.push("/login/worker")
+                }}
+            />
             <div className="flex">
-                <CollapsibleSidebar userRole="worker" locale={locale} user={{}} />
+                <CollapsibleSidebar userRole="worker" locale={locale} user={user} />
                 <main className="flex-1 p-8">
                     <div className="max-w-7xl mx-auto space-y-8">
                         <h1 className="text-2xl font-bold text-gray-800 dark:text-white">My Assigned Tasks</h1>

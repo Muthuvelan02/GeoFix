@@ -234,11 +234,16 @@ class AdminService {
 
   /**
    * Get active contractors only (for assignment)
+   * Since there's no backend endpoint for active contractors, we'll use mock data
+   * In a real implementation, this would need a backend endpoint
    */
   async getActiveContractors(): Promise<Contractor[]> {
     try {
-      const response = await api.get<Contractor[]>('/api/admin/contractors/active');
-      return Array.isArray(response.data) ? response.data : [];
+      // Backend currently exposes only pending contractors endpoint.
+      // Fetch pending and filter for ACTIVE/VERIFIED in case backend evolves to include them.
+      const response = await api.get<Contractor[]>('/api/admin/contractors/pending');
+      const data = Array.isArray(response.data) ? response.data : [];
+      return data.filter(c => c.status === 'ACTIVE' || c.status === 'VERIFIED');
     } catch (error: any) {
       console.error('Error fetching active contractors:', error);
       throw new Error(error.response?.data?.error || error.response?.data?.message || 'Failed to fetch active contractors');

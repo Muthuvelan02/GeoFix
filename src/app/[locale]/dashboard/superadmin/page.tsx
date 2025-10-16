@@ -99,10 +99,19 @@ export default function SuperadminDashboard() {
                 <meta name="description" content="Super administrator dashboard for complete system management" />
             </Head>
             <div className="min-h-screen bg-gradient-to-br from-red-900/20 via-gray-900 to-black">
-                <DashboardHeader />
+                <DashboardHeader
+                    userRole="superadmin"
+                    userName={user?.name || "Super Admin"}
+                    userEmail={user?.email || "superadmin@example.com"}
+                    notificationCount={0}
+                    onLogout={() => {
+                        authService.logout()
+                        router.push("/login/admin")
+                    }}
+                />
 
                 <div className="flex">
-                    <CollapsibleSidebar userRole="superadmin" locale="en" />
+                    <CollapsibleSidebar userRole="superadmin" locale="en" user={user} />
 
                     <main className="flex-1 p-6 lg:p-8">
                         {error && (

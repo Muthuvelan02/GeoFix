@@ -220,9 +220,18 @@ export default function CitizenSettings() {
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-                <DashboardHeader />
+                <DashboardHeader
+                    userRole="citizen"
+                    userName={user?.name || "Citizen"}
+                    userEmail={user?.email || "citizen@example.com"}
+                    notificationCount={0}
+                    onLogout={() => {
+                        authService.logout()
+                        router.push("/login/citizen")
+                    }}
+                />
                 <div className="flex">
-                    <CollapsibleSidebar userRole="citizen" locale={locale} />
+                    <CollapsibleSidebar userRole="citizen" locale={locale} user={user} />
                     <main className="flex-1 lg:ml-64">
                         <div className="p-8">
                             <div className="animate-pulse space-y-6">
@@ -248,7 +257,16 @@ export default function CitizenSettings() {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-            <DashboardHeader />
+            <DashboardHeader
+                userRole="citizen"
+                userName={user?.name || "Citizen"}
+                userEmail={user?.email || "citizen@example.com"}
+                notificationCount={0}
+                onLogout={() => {
+                    authService.logout()
+                    router.push("/login/citizen")
+                }}
+            />
 
             <div className="flex">
                 <CollapsibleSidebar userRole="citizen" locale={locale} user={user} />

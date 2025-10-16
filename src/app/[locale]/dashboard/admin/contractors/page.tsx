@@ -53,15 +53,37 @@ export default function ContractorManagementPage() {
         try {
             setLoading(true)
             setError(null)
-            const [pending, active] = await Promise.all([
+            console.log('🔄 Loading contractors in admin dashboard...')
+            const [pending, dashboard, tickets] = await Promise.all([
                 adminService.getPendingContractors(),
-                adminService.getActiveContractors(),
+                adminService.getDashboardData(),
+                adminService.getAllTickets(),
             ])
+            console.log('📊 Pending contractors loaded:', pending?.length || 0)
+            console.log('📊 Dashboard verified contractors:', dashboard?.verifiedContractors || 0)
+            // Infer active contractors from tickets' assignedContractor (backend guarantees ACTIVE for assignment)
+            const inferredActive: Contractor[] = Array.isArray(tickets)
+                ? (tickets as TicketForAdmin[])
+                    .filter(t => t.assignedContractor)
+                    .map(t => ({
+                        id: t.assignedContractor!.id,
+                        name: t.assignedContractor!.name,
+                        email: t.assignedContractor!.email,
+                        mobile: "",
+                        address: "",
+                        status: 'ACTIVE',
+                        roles: ['ROLE_CONTRACTOR'],
+                        createdAt: t.createdAt,
+                    }))
+                : []
+            // Merge pending + inferred active (unique by id)
             const byId = new Map<number, Contractor>()
                 ; (pending || []).forEach(c => byId.set(c.id, c))
-                ; (active || []).forEach(c => byId.set(c.id, c))
+            inferredActive.forEach(c => {
+                if (!byId.has(c.id)) byId.set(c.id, c)
+            })
             setContractors(Array.from(byId.values()))
-            setVerifiedContractorsCount((active || []).length)
+            setVerifiedContractorsCount(dashboard?.verifiedContractors || 0)
         } catch (err: any) {
             console.error('❌ Error loading contractors:', err)
             setError(err.message || "Failed to load contractors")
@@ -120,13 +142,25 @@ export default function ContractorManagementPage() {
 
             if (selectedAction === "VERIFY") {
                 await adminService.verifyContractor(selectedContractor.id)
-                await loadContractors()
+                console.log('Contractor verification successful, updating local state')
+                setContractors(prev => prev.map(contractor =>
+                    contractor.id === selectedContractor.id
+                        ? { ...contractor, status: 'ACTIVE' }
+                        : contractor
+                ))
+                // Move view to ACTIVE tab so the approved contractor is visible
                 setTab("ACTIVE")
                 setStatusFilter("ALL")
                 setSearch("")
             } else {
                 await adminService.rejectContractor(selectedContractor.id, 'Rejected by admin')
-                await loadContractors()
+                console.log('Contractor rejection successful, updating local state')
+                setContractors(prev => prev.map(contractor =>
+                    contractor.id === selectedContractor.id
+                        ? { ...contractor, status: 'REJECTED' }
+                        : contractor
+                ))
+                // Move view to REJECTED tab so the contractor remains visible
                 setTab("REJECTED")
                 setStatusFilter("ALL")
                 setSearch("")
@@ -163,7 +197,22 @@ export default function ContractorManagementPage() {
                                 >
                                     {loading ? "Loading..." : "Refresh"}
                                 </Button>
-
+                                <Button
+                                    onClick={() => {
+                                        console.log('🔍 DEBUG: Current contractors state:', contractors);
+                                        console.log('🔍 DEBUG: Looking for jv@cont.com...');
+                                        const targetContractor = contractors.find(c => c.email === 'jv@cont.com');
+                                        if (targetContractor) {
+                                            console.log('✅ Found jv@cont.com:', targetContractor);
+                                        } else {
+                                            console.log('❌ jv@cont.com not found in current state');
+                                        }
+                                    }}
+                                    variant="outline"
+                                    className="cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100"
+                                >
+                                    Debug
+                                </Button>
                             </div>
                         </div>
 

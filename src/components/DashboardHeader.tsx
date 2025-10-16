@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, Search, Settings, User, LogOut, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
+import { authService } from '@/services/authService';
 
 interface DashboardHeaderProps {
     userRole?: 'admin' | 'citizen' | 'contractor' | 'superadmin';
@@ -27,15 +28,51 @@ interface DashboardHeaderProps {
 }
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
-    userRole = 'citizen',
-    userName = 'John Doe',
-    userEmail = 'john@example.com',
-    notificationCount = 3,
+    userRole,
+    userName,
+    userEmail,
+    notificationCount = 0,
     onProfileClick,
     onSettingsClick,
     onLogout
 }) => {
     const { theme, setTheme } = useTheme();
+    const [user, setUser] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadUserData = async () => {
+            try {
+                const currentUser = authService.getCurrentUser();
+                if (currentUser) {
+                    // Try to get full profile data
+                    try {
+                        const profile = await authService.getProfile();
+                        setUser(profile);
+                    } catch (profileError) {
+                        // Fallback to basic user data
+                        setUser({
+                            id: currentUser.userId,
+                            name: (currentUser as any).name || 'User',
+                            email: (currentUser as any).email || 'user@example.com',
+                            roles: currentUser.roles
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadUserData();
+    }, []);
+
+    // Use props if provided, otherwise use loaded user data
+    const displayUserRole = userRole || (user?.roles?.[0]?.replace('ROLE_', '').toLowerCase()) || 'citizen';
+    const displayUserName = userName || user?.name || 'User';
+    const displayUserEmail = userEmail || user?.email || 'user@example.com';
 
     const getRoleColor = (role: string) => {
         switch (role) {
@@ -62,7 +99,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <div>
                             <h1 className="text-lg font-semibold">GeoFix</h1>
                             <p className="text-xs text-muted-foreground hidden sm:block">
-                                {userRole.charAt(0).toUpperCase() + userRole.slice(1)} Dashboard
+                                {displayUserRole.charAt(0).toUpperCase() + displayUserRole.slice(1)} Dashboard
                             </p>
                         </div>
                     </div>
@@ -110,9 +147,9 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                                 <Avatar className="h-10 w-10">
-                                    <AvatarImage src="/placeholder-avatar.svg" alt={userName} />
+                                    <AvatarImage src="/placeholder-avatar.svg" alt={displayUserName} />
                                     <AvatarFallback>
-                                        {userName.split(' ').map(n => n[0]).join('')}
+                                        {displayUserName.split(' ').map((n: string) => n[0]).join('')}
                                     </AvatarFallback>
                                 </Avatar>
                             </Button>
@@ -120,12 +157,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <DropdownMenuContent className="w-56" align="end" forceMount>
                             <DropdownMenuLabel className="font-normal">
                                 <div className="flex flex-col space-y-1">
-                                    <p className="text-sm font-medium leading-none">{userName}</p>
+                                    <p className="text-sm font-medium leading-none">{displayUserName}</p>
                                     <p className="text-xs leading-none text-muted-foreground">
-                                        {userEmail}
+                                        {displayUserEmail}
                                     </p>
-                                    <Badge className={`${getRoleColor(userRole)} w-fit mt-1`}>
-                                        {userRole}
+                                    <Badge className={`${getRoleColor(displayUserRole)} w-fit mt-1`}>
+                                        {displayUserRole}
                                     </Badge>
                                 </div>
                             </DropdownMenuLabel>
