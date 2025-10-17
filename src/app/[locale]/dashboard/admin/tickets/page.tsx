@@ -4,12 +4,12 @@ import React, { useState, useMemo, useEffect } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
 import {
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog"
 import {
@@ -24,6 +24,7 @@ import { Loader2, AlertCircle } from "lucide-react"
 import CollapsibleSidebar from "@/components/CollapsibleSidebar"
 import adminService, { TicketForAdmin, Contractor } from "@/services/adminService"
 import { authService } from "@/services/authService"
+import { Input } from "@/components/ui/input"
 
 export default function TicketManagementPage() {
     const [user, setUser] = useState<any>(null)
@@ -69,11 +70,13 @@ export default function TicketManagementPage() {
     }
 
     const handleAssignToContractor = async () => {
-        if (!selectedTicket || !selectedContractor) return
+        if (!selectedTicket) return
+        const contractorIdToUse = selectedContractor
+        if (!contractorIdToUse || Number.isNaN(contractorIdToUse)) return
 
         try {
             setActionLoading(true)
-            await adminService.assignTicketToContractor(selectedTicket.id, selectedContractor)
+            await adminService.assignTicketToContractor(selectedTicket.id, contractorIdToUse)
 
             // Refresh data
             await loadData()
@@ -344,6 +347,9 @@ export default function TicketManagementPage() {
                 <DialogContent>
                     <DialogHeader>
                         <DialogTitle>Assign Ticket to Contractor</DialogTitle>
+                        <DialogDescription>
+                            Choose a contractor to assign this ticket. Only ACTIVE contractors are listed.
+                        </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         {selectedTicket && (

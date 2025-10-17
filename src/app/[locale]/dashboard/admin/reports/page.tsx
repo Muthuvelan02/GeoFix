@@ -63,9 +63,9 @@ export default function AdminReportsPage() {
                 completedTickets: completed,
                 pendingTickets: reportData.pendingTickets || 0,
                 inProgressTickets: reportData.inProgressTickets || 0,
-                averageCompletionTime: 2.5, // mock data
-                totalContractors: 8, // mock data
-                activeContractors: 6, // mock data
+                averageCompletionTime: 0,
+                totalContractors: 0,
+                activeContractors: 0,
                 completionRate: Math.round(completionRate),
             });
         } catch (err) {

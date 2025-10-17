@@ -92,7 +92,7 @@ export default function AdminDashboard() {
                 totalTickets: dashboardStats.totalTickets || 0,
                 pendingTickets: dashboardStats.pendingTickets || 0,
                 totalCitizens: dashboardStats.totalCitizens || 0,
-                totalContractors: dashboardStats.verifiedContractors || 0
+                totalContractors: usersData.filter((u: any) => u.role?.some((r: string) => r.includes('CONTRACTOR')) && u.status === 'ACTIVE').length
             })
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failed to load dashboard data")

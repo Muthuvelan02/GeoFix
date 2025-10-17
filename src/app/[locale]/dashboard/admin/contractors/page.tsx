@@ -23,7 +23,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, AlertCircle } from "lucide-react"
 import CollapsibleSidebar from "@/components/CollapsibleSidebar"
-import adminService, { Contractor } from "@/services/adminService"
+import adminService, { Contractor, TicketForAdmin } from "@/services/adminService"
 import { authService } from "@/services/authService"
 
 export default function ContractorManagementPage() {
@@ -32,12 +32,13 @@ export default function ContractorManagementPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [actionLoading, setActionLoading] = useState(false)
-    const [tab, setTab] = useState<"PENDING" | "ALL">("PENDING")
+    const [tab, setTab] = useState<"PENDING" | "ACTIVE" | "REJECTED" | "ALL">("PENDING")
     const [search, setSearch] = useState("")
     const [statusFilter, setStatusFilter] = useState<string>("ALL")
     const [dialogOpen, setDialogOpen] = useState(false)
     const [selectedAction, setSelectedAction] = useState<"VERIFY" | "REJECT" | null>(null)
     const [selectedContractor, setSelectedContractor] = useState<Contractor | null>(null)
+    const [verifiedContractorsCount, setVerifiedContractorsCount] = useState<number>(0)
 
     // Load contractors from backend
     useEffect(() => {
@@ -52,11 +53,15 @@ export default function ContractorManagementPage() {
         try {
             setLoading(true)
             setError(null)
-            console.log('🔄 Loading contractors in admin dashboard...')
-            const data = await adminService.getAllContractors()
-            console.log('📊 Contractors loaded:', data)
-            console.log('📊 Number of contractors:', data.length)
-            setContractors(data)
+            const [pending, active] = await Promise.all([
+                adminService.getPendingContractors(),
+                adminService.getActiveContractors(),
+            ])
+            const byId = new Map<number, Contractor>()
+                ; (pending || []).forEach(c => byId.set(c.id, c))
+                ; (active || []).forEach(c => byId.set(c.id, c))
+            setContractors(Array.from(byId.values()))
+            setVerifiedContractorsCount((active || []).length)
         } catch (err: any) {
             console.error('❌ Error loading contractors:', err)
             setError(err.message || "Failed to load contractors")
@@ -67,7 +72,11 @@ export default function ContractorManagementPage() {
 
     const filteredContractors = useMemo(() => {
         return contractors.filter((c) => {
-            const matchTab = tab === "PENDING" ? c.status === "PENDING" : true
+            const matchTab = (
+                tab === "PENDING" ? c.status === "PENDING" :
+                    tab === "ACTIVE" ? (c.status === "ACTIVE" || c.status === "VERIFIED") :
+                        tab === "REJECTED" ? c.status === "REJECTED" : true
+            )
             const matchSearch =
                 c.name.toLowerCase().includes(search.toLowerCase()) ||
                 c.email.toLowerCase().includes(search.toLowerCase())
@@ -77,10 +86,10 @@ export default function ContractorManagementPage() {
         })
     }, [contractors, tab, search, statusFilter])
 
-    // Stats
-    const totalCount = contractors.length
+    // Stats (Active comes from backend dashboard, Pending from pending list)
     const pendingCount = contractors.filter((c) => c.status === "PENDING").length
-    const activeCount = contractors.filter((c) => c.status === "ACTIVE" || c.status === "VERIFIED").length
+    const activeCount = verifiedContractorsCount
+    const totalCount = activeCount + pendingCount
 
     const getStatusBadge = (status: Contractor["status"]) => {
         switch (status) {
@@ -111,23 +120,16 @@ export default function ContractorManagementPage() {
 
             if (selectedAction === "VERIFY") {
                 await adminService.verifyContractor(selectedContractor.id)
-                console.log('Contractor verification successful, updating local state')
-                // Update the contractor status in the local state
-                // Backend sets status to ACTIVE when verified, so we map it to VERIFIED for UI consistency
-                setContractors(prev => prev.map(contractor =>
-                    contractor.id === selectedContractor.id
-                        ? { ...contractor, status: 'ACTIVE' }
-                        : contractor
-                ))
+                await loadContractors()
+                setTab("ACTIVE")
+                setStatusFilter("ALL")
+                setSearch("")
             } else {
                 await adminService.rejectContractor(selectedContractor.id, 'Rejected by admin')
-                console.log('Contractor rejection successful, updating local state')
-                // Update the contractor status in the local state
-                setContractors(prev => prev.map(contractor =>
-                    contractor.id === selectedContractor.id
-                        ? { ...contractor, status: 'REJECTED' }
-                        : contractor
-                ))
+                await loadContractors()
+                setTab("REJECTED")
+                setStatusFilter("ALL")
+                setSearch("")
             }
             setDialogOpen(false)
             console.log('Contractor status updated successfully')
@@ -161,22 +163,7 @@ export default function ContractorManagementPage() {
                                 >
                                     {loading ? "Loading..." : "Refresh"}
                                 </Button>
-                                <Button
-                                    onClick={() => {
-                                        console.log('🔍 DEBUG: Current contractors state:', contractors);
-                                        console.log('🔍 DEBUG: Looking for jv@cont.com...');
-                                        const targetContractor = contractors.find(c => c.email === 'jv@cont.com');
-                                        if (targetContractor) {
-                                            console.log('✅ Found jv@cont.com:', targetContractor);
-                                        } else {
-                                            console.log('❌ jv@cont.com not found in current state');
-                                        }
-                                    }}
-                                    variant="outline"
-                                    className="cursor-pointer bg-blue-50 text-blue-700 hover:bg-blue-100"
-                                >
-                                    Debug
-                                </Button>
+
                             </div>
                         </div>
 
@@ -222,7 +209,7 @@ export default function ContractorManagementPage() {
                                 </div>
 
                                 {/* Tabs */}
-                                <div className="flex border-b mb-4">
+                                <div className="flex flex-wrap gap-2 border-b mb-4">
                                     <button
                                         onClick={() => setTab("PENDING")}
                                         className={`px-4 py-2 font-medium cursor-pointer ${tab === "PENDING"
@@ -230,7 +217,25 @@ export default function ContractorManagementPage() {
                                             : "text-gray-600"
                                             }`}
                                     >
-                                        Pending Verification
+                                        Pending
+                                    </button>
+                                    <button
+                                        onClick={() => setTab("ACTIVE")}
+                                        className={`px-4 py-2 font-medium cursor-pointer ${tab === "ACTIVE"
+                                            ? "border-b-2 border-orange-600 text-orange-600"
+                                            : "text-gray-600"
+                                            }`}
+                                    >
+                                        Active
+                                    </button>
+                                    <button
+                                        onClick={() => setTab("REJECTED")}
+                                        className={`px-4 py-2 font-medium cursor-pointer ${tab === "REJECTED"
+                                            ? "border-b-2 border-orange-600 text-orange-600"
+                                            : "text-gray-600"
+                                            }`}
+                                    >
+                                        Rejected
                                     </button>
                                     <button
                                         onClick={() => setTab("ALL")}
@@ -239,7 +244,7 @@ export default function ContractorManagementPage() {
                                             : "text-gray-600"
                                             }`}
                                     >
-                                        All Contractors
+                                        All
                                     </button>
                                 </div>
 

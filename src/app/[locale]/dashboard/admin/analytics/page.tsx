@@ -60,9 +60,9 @@ export default function AdminAnalyticsPage() {
                 completedTickets: completed,
                 pendingTickets: reportData.pendingTickets || 0,
                 inProgressTickets: reportData.inProgressTickets || 0,
-                averageCompletionTime: 2.5, // mock data
-                totalContractors: 8, // mock data
-                activeContractors: 6, // mock data
+                averageCompletionTime: 0,
+                totalContractors: allUsers.filter(u => u.role.some(r => r.includes('CONTRACTOR'))).length,
+                activeContractors: allUsers.filter(u => u.role.some(r => r.includes('CONTRACTOR')) && u.status === 'ACTIVE').length,
                 totalUsers: allUsers.length,
                 completionRate: Math.round(completionRate),
             });
